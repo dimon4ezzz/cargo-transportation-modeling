@@ -9,16 +9,15 @@ import java.util.*
  * генерацию нового заказа
  */
 class Modeller (
-    val points: List<Point>
+    private val points: List<Point>
 ) : TimerTask() {
-    private val ORDER_DELAY = 1_000L // ms
-
+    private val orderDelay = 1_000L // 1ms
     private val timer = Timer()
 
     override fun run() {
         timer.schedule(
             getRandomOrderSource(),
-            ORDER_DELAY
+            orderDelay
         )
     }
 
