@@ -12,7 +12,12 @@ data class Truck (
     /**
      * Местоположение грузовика.
      */
-    var location: Point
+    var location: Point,
+
+    /**
+     * Состояние грузовика.
+     */
+    var state: TruckState
 ) {
     /**
      * Прикреплённый контейнеровоз.
