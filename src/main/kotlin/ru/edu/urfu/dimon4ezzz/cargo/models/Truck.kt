@@ -7,7 +7,12 @@ data class Truck (
     /**
      * Название грузовика.
      */
-    val name: String
+    val name: String,
+
+    /**
+     * Местоположение грузовика.
+     */
+    var location: Point
 ) {
     /**
      * Прикреплённый контейнеровоз.
