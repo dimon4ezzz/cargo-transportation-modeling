@@ -7,10 +7,10 @@ data class Truck (
     /**
      * Название грузовика.
      */
-    val name: String,
-
+    val name: String
+) {
     /**
      * Прикреплённый контейнеровоз.
      */
-    var containerShip: ContainerShip?
-)
+    var containerShip: ContainerShip? = null
+}
