@@ -1,9 +1,14 @@
 plugins {
     kotlin("jvm") version "1.3.60"
+    application
 }
 
 group = "ru.edu.urfu.dimon4ezzz"
 version = "1.0-SNAPSHOT"
+
+application {
+    mainClassName = "MainKt"
+}
 
 repositories {
     mavenCentral()
