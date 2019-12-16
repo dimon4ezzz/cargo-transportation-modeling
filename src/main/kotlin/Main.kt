@@ -40,8 +40,9 @@ fun main() {
     modeller = Modeller(points)
 
     println("Запускаем генерацию заказов")
-    timer.schedule(
+    timer.scheduleAtFixedRate(
         modeller,
+        0,
         DURATION
     )
 }
