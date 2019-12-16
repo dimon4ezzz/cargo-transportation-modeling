@@ -7,7 +7,7 @@ group = "ru.edu.urfu.dimon4ezzz"
 version = "1.0-SNAPSHOT"
 
 application {
-    mainClassName = "ru.edu.urfu.dimon4ezzz.cargo.MainKt"
+    mainClassName = "MainKt"
 }
 
 repositories {
