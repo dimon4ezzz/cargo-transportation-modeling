@@ -66,15 +66,13 @@ class OrderSource (
      * @throws IllegalStateException когда не задан список пунктов
      */
     private fun getRandomPoint(): Point {
-        InformationHolder.points?.let {
-            var point = it.random()
+        var point = InformationHolder.getRandomPoint()
 
-            while (point == currentPoint) {
-                point = it.random()
-            }
+        while (point == currentPoint) {
+            point = InformationHolder.getRandomPoint()
+        }
 
-            return point
-        }?: throw IllegalStateException("there is no list of points")
+        return point
     }
 
     /**
