@@ -29,9 +29,6 @@ fun main() {
         println(it)
     }
 
-    println("Создаём источники заказов")
-    generateOrderSources()
-
     println("Грузовики слушают заказы")
     setListeners()
 
@@ -78,15 +75,6 @@ private fun generateTrucks(amount: Int = TRUCKS_AMOUNT) = IntStream.range(0, amo
             state = TruckState.SLEEPING
         )
     }.toList()
-
-/**
- * Создаёт источники заказов в каждом пункте.
- */
-private fun generateOrderSources() = InformationHolder.points?.forEach {
-    it.orderSource = OrderSource(
-        currentPoint = it
-    )
-}
 
 /**
  * Задаёт действия грузовиков на новые заказы.
