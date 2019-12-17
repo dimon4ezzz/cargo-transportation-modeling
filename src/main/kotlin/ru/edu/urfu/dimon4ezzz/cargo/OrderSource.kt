@@ -37,7 +37,7 @@ class OrderSource (
     override fun run() =
         listener
             ?.onCreate(generateOrder())
-            ?:throw IllegalStateException("listener not found")
+            ?:throw IllegalStateException("listener not found in ${currentPoint.name}")
 
     /**
      * Добавление слушателя.
