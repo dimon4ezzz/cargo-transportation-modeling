@@ -4,6 +4,7 @@ import ru.edu.urfu.dimon4ezzz.cargo.models.Order
 import ru.edu.urfu.dimon4ezzz.cargo.models.Point
 import java.lang.IllegalStateException
 import java.util.concurrent.ConcurrentLinkedQueue
+import kotlin.random.Random
 
 /**
  * Источник заказов.
@@ -32,7 +33,12 @@ class OrderSource (
     /**
      * При работе этой задачи просто создаётся новый заказ и кладётся в очередь.
      */
-    override fun run() = orderQueue.push(generateOrder())
+    override fun run() {
+        orderQueue.push(generateOrder())
+
+        if (Random.nextInt(2) == 1)
+            orderQueue.push(generateOrder())
+    }
 
     /**
      * Добавление слушателя очереди.
