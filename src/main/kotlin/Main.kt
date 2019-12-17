@@ -30,6 +30,9 @@ fun main() {
     println("Создаём источники заказов")
     generateOrderSources()
 
+    println("Создаём очереди для заказов")
+    generateDefaultOrderListeners()
+
     println("Грузовики слушают заказы")
     setListeners()
 
@@ -92,10 +95,17 @@ private fun generateOrderSources() = points.forEach {
 }
 
 /**
+ * Генерируем очереди в каждом пункте.
+ */
+private fun generateDefaultOrderListeners() = points.forEach {
+    it.setDefaultOrderSourceListener()
+}
+
+/**
  * Задаёт действия грузовиков на новые заказы.
  */
 fun setListeners() = trucks.forEach {
-    it.location.orderSource?.addOrderListener(object : OrderListener {
+    it.location.orderSource?.setOrderListener(object : OrderListener {
         override fun onCreate(order: Order) {
 //            it.state = TruckState.TAKING
             // order должен класться в контейнер и т.д.

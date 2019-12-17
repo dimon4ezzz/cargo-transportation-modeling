@@ -41,7 +41,7 @@ class OrderSource (
     /**
      * Добавление слушателя.
      */
-    fun addOrderListener(listener: OrderListener) {
+    fun setOrderListener(listener: OrderListener) {
         this.listener = listener
     }
 
