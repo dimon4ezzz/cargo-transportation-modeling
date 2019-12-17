@@ -48,6 +48,7 @@ fun main() {
         5000
     )
 
+    // через 2 мин 24 сек «выключить» потоки
     Thread.sleep(DURATION)
     timer.cancel()
 }
@@ -65,17 +66,6 @@ private fun generatePoints(amount: Int = POINTS_AMOUNT) = IntStream.range(0, amo
     }.toList()
 
 /**
- * Предоставляет случайный пункт.
- *
- * @throws IllegalStateException когда список пунктов не задан
- */
-private fun getRandomPoint(): Point {
-    InformationHolder.points
-        ?.let { return it.random() }
-        ?:throw IllegalStateException("list of points not set")
-}
-
-/**
  * Генерирует машины в случайных местах.
  *
  * Пока что все названия — номер по порядку.
@@ -84,7 +74,7 @@ private fun generateTrucks(amount: Int = TRUCKS_AMOUNT) = IntStream.range(0, amo
     .mapToObj<Truck> {
         Truck(
             name = it.toString(),
-            location = getRandomPoint(),
+            location = InformationHolder.getRandomPoint(),
             state = TruckState.SLEEPING
         )
     }.toList()
