@@ -105,11 +105,5 @@ private fun generateDefaultOrderListeners() = points.forEach {
  * Задаёт действия грузовиков на новые заказы.
  */
 fun setListeners() = trucks.forEach {
-    it.location.orderSource?.setOrderListener(object : OrderListener {
-        override fun onCreate(order: Order) {
-//            it.state = TruckState.TAKING
-            // order должен класться в контейнер и т.д.
-            println("${it.name} took order ${order.name}")
-        }
-    })
+    it.setOrderListener()
 }
