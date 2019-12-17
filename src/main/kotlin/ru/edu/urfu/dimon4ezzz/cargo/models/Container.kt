@@ -12,5 +12,15 @@ data class Container (
     /**
      * Список заказов внутри.
      */
-    val orders: List<Order>
-)
+    val orders: ArrayList<Order>
+) {
+    private val capacity = 2
+
+    fun add(order: Order): Boolean {
+        if (orders.count() < capacity) {
+            return orders.add(order)
+        }
+
+        return false
+    }
+}

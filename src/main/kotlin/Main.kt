@@ -1,6 +1,5 @@
 import ru.edu.urfu.dimon4ezzz.cargo.InformationHolder
 import ru.edu.urfu.dimon4ezzz.cargo.Modeller
-import ru.edu.urfu.dimon4ezzz.cargo.OrderSource
 import ru.edu.urfu.dimon4ezzz.cargo.models.*
 import java.util.Timer
 import java.util.stream.IntStream
@@ -16,7 +15,6 @@ private const val TRUCKS_AMOUNT = 10
 private const val DURATION: Long = (12 * 60 / 5) * 1000
 
 private lateinit var trucks: List<Truck>
-private lateinit var modeller: Modeller
 private lateinit var timer: Timer
 
 fun main() {
@@ -26,21 +24,15 @@ fun main() {
     println("Генерируем машины")
     trucks = generateTrucks()
     trucks.forEach {
-        println(it)
+        println("${it.name} находится в ${it.location.name}")
     }
-
-    println("Грузовики слушают заказы")
-    setListeners()
 
     println("Создаём таймер")
     timer = Timer()
 
-    println("Создаём генератор заказов")
-    modeller = Modeller()
-
     println("Запускаем генерацию заказов")
     timer.scheduleAtFixedRate(
-        modeller,
+        Modeller(),
         1000,
         5000
     )
@@ -75,10 +67,3 @@ private fun generateTrucks(amount: Int = TRUCKS_AMOUNT) = IntStream.range(0, amo
             state = TruckState.SLEEPING
         )
     }.toList()
-
-/**
- * Задаёт действия грузовиков на новые заказы.
- */
-fun setListeners() = trucks.forEach {
-    it.setOrderListener()
-}

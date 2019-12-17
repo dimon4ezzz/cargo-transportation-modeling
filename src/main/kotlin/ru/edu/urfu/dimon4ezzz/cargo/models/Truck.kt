@@ -1,11 +1,16 @@
 package ru.edu.urfu.dimon4ezzz.cargo.models
 
 import ru.edu.urfu.dimon4ezzz.cargo.OrderQueueListener
+import ru.edu.urfu.dimon4ezzz.cargo.TruckTakingTask
+import java.lang.IllegalStateException
+import java.util.*
+import java.util.concurrent.ConcurrentLinkedQueue
+import kotlin.system.exitProcess
 
 /**
  * Грузовик.
  */
-data class Truck (
+data class Truck(
     /**
      * Название грузовика.
      */
@@ -22,41 +27,39 @@ data class Truck (
     var state: TruckState
 ) {
     /**
-     * Время забирания заказа из точки.
-     *
-     * 5 минут → 1 секунда, значит 30 минут → 6 секунд.
-     */
-    private val takingTime: Long = 30 / 5 // 6s
-
-    /**
      * Время движения по одному ребру графа пунктов.
      *
      * 5 минут → 1 секунда, значит 1 час → 12 секунд.
      */
     private val movingTime: Long = 60 / 5 // 12s
 
-    private var iter = 0L
-
     /**
      * Прикреплённый контейнеровоз.
      */
     var containerShip: ContainerShip? = null
 
-    fun setOrderListener() {
+    private var orders = ConcurrentLinkedQueue<Order>()
+
+    init {
+        setOrderSourceListener()
+    }
+
+    private fun setOrderSourceListener() {
         location.orderSource.addOrderQueueListener(object : OrderQueueListener {
-            override fun onPush() {
-                containerShip = ContainerShip(
-                    name = "$name-${iter++}",
-                    containers = listOf(
-                        Container(
-                            name = "$name-${iter++}",
-                            orders = listOf(
-                                location.orderSource.getOrder()
-                            )
-                        )
-                    )
-                )
-                println("$name took ${containerShip!!.containers[0].orders[0].name}")
+            override fun onPush(order: Order) {
+                println("$name start taking ${order.name}")
+                orders.add(order)
+
+                try {
+                    Thread(TruckTakingTask(this@Truck, order)).start()
+                } catch (e: IllegalStateException) {
+                    println(e.message)
+                    exitProcess(1)
+                }
+            }
+
+            override fun isLast(): Boolean {
+                return orders.count() == 5
             }
         })
 //        location.orderSource?.setOrderListener(object : OrderListener {

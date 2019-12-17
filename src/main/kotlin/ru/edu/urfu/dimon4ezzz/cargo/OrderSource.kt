@@ -48,11 +48,6 @@ class OrderSource (
     }
 
     /**
-     * Передаёт первый из очереди заказ.
-     */
-    fun getOrder() = orderQueue.pull()
-
-    /**
      * Генерирует один заказ.
      */
     private fun generateOrder() = Order(
@@ -87,21 +82,10 @@ class OrderSource (
 
         if (!listeners.isEmpty()) {
             // оповестить листенер
-            listeners.first().onPush()
+            listeners.first().onPush(poll())
             // удалить первый в очереди листенер
-            listeners.remove()
+            if (listeners.first().isLast())
+                listeners.remove()
         }
-    }
-
-    /**
-     * Получает первый из очереди заказ и удаляет его из очереди.
-     *
-     * Расширяет возможности ConcurrentLinkedQueue.
-     * @see ConcurrentLinkedQueue
-     */
-    private fun ConcurrentLinkedQueue<Order>.pull(): Order {
-        val order = first()
-        remove()
-        return order
     }
 }
