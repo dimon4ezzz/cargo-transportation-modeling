@@ -1,5 +1,5 @@
+import ru.edu.urfu.dimon4ezzz.cargo.InformationHolder
 import ru.edu.urfu.dimon4ezzz.cargo.Modeller
-import ru.edu.urfu.dimon4ezzz.cargo.OrderListener
 import ru.edu.urfu.dimon4ezzz.cargo.OrderSource
 import ru.edu.urfu.dimon4ezzz.cargo.models.*
 import java.util.Timer
@@ -15,23 +15,22 @@ private const val TRUCKS_AMOUNT = 10
  */
 private const val DURATION: Long = (12 * 60 / 5) * 1000
 
-private lateinit var points: List<Point>
 private lateinit var trucks: List<Truck>
 private lateinit var modeller: Modeller
 private lateinit var timer: Timer
 
 fun main() {
     println("Генерируем пункты")
-    points = generatePoints()
+    InformationHolder.points = generatePoints()
 
     println("Генерируем машины")
     trucks = generateTrucks()
+    trucks.forEach {
+        println(it)
+    }
 
     println("Создаём источники заказов")
     generateOrderSources()
-
-    println("Создаём очереди для заказов")
-    generateDefaultOrderListeners()
 
     println("Грузовики слушают заказы")
     setListeners()
@@ -40,7 +39,7 @@ fun main() {
     timer = Timer()
 
     println("Создаём генератор заказов")
-    modeller = Modeller(points)
+    modeller = Modeller()
 
     println("Запускаем генерацию заказов")
     timer.scheduleAtFixedRate(
@@ -67,8 +66,14 @@ private fun generatePoints(amount: Int = POINTS_AMOUNT) = IntStream.range(0, amo
 
 /**
  * Предоставляет случайный пункт.
+ *
+ * @throws IllegalStateException когда список пунктов не задан
  */
-private fun getRandomPoint() = points.random()
+private fun getRandomPoint(): Point {
+    InformationHolder.points
+        ?.let { return it.random() }
+        ?:throw IllegalStateException("list of points not set")
+}
 
 /**
  * Генерирует машины в случайных местах.
@@ -87,18 +92,10 @@ private fun generateTrucks(amount: Int = TRUCKS_AMOUNT) = IntStream.range(0, amo
 /**
  * Создаёт источники заказов в каждом пункте.
  */
-private fun generateOrderSources() = points.forEach {
+private fun generateOrderSources() = InformationHolder.points?.forEach {
     it.orderSource = OrderSource(
-        points = points,
         currentPoint = it
     )
-}
-
-/**
- * Генерируем очереди в каждом пункте.
- */
-private fun generateDefaultOrderListeners() = points.forEach {
-    it.setDefaultOrderSourceListener()
 }
 
 /**

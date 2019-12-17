@@ -3,56 +3,48 @@ package ru.edu.urfu.dimon4ezzz.cargo
 import ru.edu.urfu.dimon4ezzz.cargo.models.Order
 import ru.edu.urfu.dimon4ezzz.cargo.models.Point
 import java.lang.IllegalStateException
+import java.util.concurrent.ConcurrentLinkedQueue
 
 /**
  * Источник заказов.
  */
 class OrderSource (
     /**
-     * Список всех пунктов в модели.
-     */
-    val points: List<Point>,
-
-    /**
      * Пункт, из которого генерируются заказы.
      */
-    val currentPoint: Point
+    private val currentPoint: Point
 ) : Runnable {
     /**
-     * Слушатель заказов.
+     * Очередь заказов в пункте.
      */
-    private var listener: OrderListener? = null
+    private val orderQueue = ConcurrentLinkedQueue<Order>()
+
+    /**
+     * Слушатели заказов.
+     */
+    private var listeners = ConcurrentLinkedQueue<OrderQueueListener>()
 
     /**
      * Итерационная переменная для заказов.
      */
-    private var ordersAmount = 0
+    private var ordersAmount = 0L
 
     /**
-     * При работе этой задачи просто создаётся новый заказ и отдаётся слушателю.
-     *
-     * @throws IllegalStateException когда слушатель не задан
+     * При работе этой задачи просто создаётся новый заказ и кладётся в очередь.
      */
-    override fun run() =
-        listener
-            ?.onCreate(generateOrder())
-            ?:throw IllegalStateException("listener not found in ${currentPoint.name}")
+    override fun run() = orderQueue.push(generateOrder())
 
     /**
-     * Добавление слушателя.
+     * Добавление слушателя очереди.
      */
-    fun setOrderListener(listener: OrderListener) {
-        this.listener = listener
+    fun addOrderQueueListener(listener: OrderQueueListener) {
+        listeners.add(listener)
     }
 
     /**
-     * Удаление слушателя.
-     *
-     * Неизвестно, нужно ли будет; см. проблемы с памятью
+     * Передаёт первый из очереди заказ.
      */
-    fun removeOrderListener() {
-        listener = null
-    }
+    fun getOrder() = orderQueue.pull()
 
     /**
      * Генерирует один заказ.
@@ -64,14 +56,48 @@ class OrderSource (
 
     /**
      * Генерирует случайный пункт, за исключением текущего.
+     *
+     * @throws IllegalStateException когда не задан список пунктов
      */
     private fun getRandomPoint(): Point {
-        var point = points.random()
+        InformationHolder.points?.let {
+            var point = it.random()
 
-        while (point == currentPoint) {
-            point = points.random()
+            while (point == currentPoint) {
+                point = it.random()
+            }
+
+            return point
+        }?: throw IllegalStateException("there is no list of points")
+    }
+
+    /**
+     * Добавляет заказ в очередь, оповещает первого в списке слушателя и удаляет его.
+     *
+     * Расширяет возможности ConcurrentLinkedQueue.
+     * @see ConcurrentLinkedQueue
+     */
+    private fun ConcurrentLinkedQueue<Order>.push(order: Order) {
+        println("Получен новый заказ ${order.name} в ${order.destination.name}")
+        add(order)
+
+        if (!listeners.isEmpty()) {
+            // оповестить листенер
+            listeners.first().onPush()
+            // удалить первый в очереди листенер
+            listeners.remove()
         }
+    }
 
-        return point
+    /**
+     * Получает первый из очереди заказ и удаляет его из очереди.
+     *
+     * Расширяет возможности ConcurrentLinkedQueue.
+     * @see ConcurrentLinkedQueue
+     */
+    private fun ConcurrentLinkedQueue<Order>.pull(): Order {
+        val order = first()
+        remove()
+        return order
     }
 }
