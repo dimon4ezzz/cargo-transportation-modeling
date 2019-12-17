@@ -3,7 +3,6 @@ package ru.edu.urfu.dimon4ezzz.cargo
 import ru.edu.urfu.dimon4ezzz.cargo.models.Order
 import ru.edu.urfu.dimon4ezzz.cargo.models.Point
 import java.lang.IllegalStateException
-import java.util.TimerTask
 
 /**
  * Источник заказов.
@@ -18,7 +17,7 @@ class OrderSource (
      * Пункт, из которого генерируются заказы.
      */
     val currentPoint: Point
-) : TimerTask() {
+) : Runnable {
     /**
      * Слушатель заказов.
      */
