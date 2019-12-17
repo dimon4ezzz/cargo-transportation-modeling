@@ -58,7 +58,7 @@ class OrderSource (
      * Генерирует один заказ.
      */
     private fun generateOrder() = Order(
-        name = "${currentPoint.name}${ordersAmount++}",
+        name = "${currentPoint.name}-${ordersAmount++}",
         destination = getRandomPoint()
     )
 
