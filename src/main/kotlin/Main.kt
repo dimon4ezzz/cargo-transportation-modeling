@@ -13,7 +13,7 @@ private const val TRUCKS_AMOUNT = 10
  * Если 5 минут модели = 1 секунде реального времени,
  * то время моделирования 12 часов = 144 секунды (2m24s)
  */
-private const val DURATION: Long = 12 * 60 / 5
+private const val DURATION: Long = (12 * 60 / 5) * 1000
 
 private lateinit var points: List<Point>
 private lateinit var trucks: List<Truck>
@@ -42,9 +42,12 @@ fun main() {
     println("Запускаем генерацию заказов")
     timer.scheduleAtFixedRate(
         modeller,
-        0,
-        DURATION
+        1000,
+        5000
     )
+
+    Thread.sleep(DURATION)
+    timer.cancel()
 }
 
 /**
