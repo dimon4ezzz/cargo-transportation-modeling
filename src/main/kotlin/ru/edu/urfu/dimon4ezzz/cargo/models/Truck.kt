@@ -33,6 +33,24 @@ data class Truck(
     private val movingTime: Long = 60 / 5 // 12s
 
     /**
+     * Стандартный листенер, смотрит за очередью заказов в пункте.
+     */
+    private val defaultOrderQueueListener = object : OrderQueueListener {
+        override fun onPush(order: Order) {
+            println("$name start taking ${order.name}")
+            orders.add(order)
+
+            val task = TruckTakingTask(this@Truck, order, defaultTruckTakingListener)
+            tasks.add(task)
+            Thread(task).start()
+        }
+
+        override fun isLast(): Boolean {
+            return orders.count() == 5
+        }
+    }
+
+    /**
      * Стандартный листенер, смотрит за своими задачами погрузки.
      */
     private val defaultTruckTakingListener = object : TruckTakingListener {
@@ -68,41 +86,6 @@ data class Truck(
     }
 
     private fun setOrderSourceListener() {
-        location.orderSource.addOrderQueueListener(object : OrderQueueListener {
-            override fun onPush(order: Order) {
-                println("$name start taking ${order.name}")
-                orders.add(order)
-
-                val task = TruckTakingTask(this@Truck, order, defaultTruckTakingListener)
-                tasks.add(task)
-                Thread(task).start()
-            }
-
-            override fun isLast(): Boolean {
-                return orders.count() == 5
-            }
-        })
-//        location.orderSource?.setOrderListener(object : OrderListener {
-//            override fun onCreate(order: Order) {
-//                println("$name delete listener from ${order.name}")
-//                location.setDefaultOrderSourceListener()
-//
-//                println("$name took order ${order.name}")
-//                state = TruckState.TAKING
-//                Thread.sleep(takingTime)
-//
-//                println("$name going to move into ${order.destination.name}")
-//                state = TruckState.MOVING
-//                Thread.sleep(movingTime)
-//
-//                println("$name reached ${order.destination.name}")
-//                state = TruckState.GIVING
-//                Thread.sleep(takingTime)
-//
-//                println("$name is ready to taking")
-//                state = TruckState.SLEEPING
-//                // добавляем листенер в пункт
-//            }
-//        })
+        location.orderSource.addOrderQueueListener(defaultOrderQueueListener)
     }
 }
