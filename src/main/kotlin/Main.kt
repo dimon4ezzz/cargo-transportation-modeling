@@ -1,5 +1,5 @@
 import ru.edu.urfu.dimon4ezzz.cargo.InformationHolder
-import ru.edu.urfu.dimon4ezzz.cargo.Modeller
+import ru.edu.urfu.dimon4ezzz.cargo.tasks.Modeller
 import ru.edu.urfu.dimon4ezzz.cargo.models.*
 import java.util.Timer
 import java.util.stream.IntStream

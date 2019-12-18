@@ -1,5 +1,6 @@
-package ru.edu.urfu.dimon4ezzz.cargo
+package ru.edu.urfu.dimon4ezzz.cargo.tasks
 
+import ru.edu.urfu.dimon4ezzz.cargo.InformationHolder
 import java.util.*
 
 /**

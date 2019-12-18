@@ -1,5 +1,6 @@
-package ru.edu.urfu.dimon4ezzz.cargo
+package ru.edu.urfu.dimon4ezzz.cargo.tasks
 
+import ru.edu.urfu.dimon4ezzz.cargo.listeners.TruckTakingListener
 import ru.edu.urfu.dimon4ezzz.cargo.models.*
 
 class TruckTakingTask(

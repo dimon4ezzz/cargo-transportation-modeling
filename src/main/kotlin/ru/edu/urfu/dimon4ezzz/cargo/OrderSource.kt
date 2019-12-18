@@ -1,5 +1,6 @@
 package ru.edu.urfu.dimon4ezzz.cargo
 
+import ru.edu.urfu.dimon4ezzz.cargo.listeners.OrderQueueListener
 import ru.edu.urfu.dimon4ezzz.cargo.models.Order
 import ru.edu.urfu.dimon4ezzz.cargo.models.Point
 import java.lang.IllegalStateException

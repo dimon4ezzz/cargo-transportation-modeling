@@ -1,8 +1,8 @@
 package ru.edu.urfu.dimon4ezzz.cargo.models
 
-import ru.edu.urfu.dimon4ezzz.cargo.OrderQueueListener
-import ru.edu.urfu.dimon4ezzz.cargo.TruckTakingListener
-import ru.edu.urfu.dimon4ezzz.cargo.TruckTakingTask
+import ru.edu.urfu.dimon4ezzz.cargo.listeners.OrderQueueListener
+import ru.edu.urfu.dimon4ezzz.cargo.listeners.TruckTakingListener
+import ru.edu.urfu.dimon4ezzz.cargo.tasks.TruckTakingTask
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
 
@@ -35,12 +35,17 @@ data class Truck(
     /**
      * Стандартный листенер, смотрит за очередью заказов в пункте.
      */
-    private val defaultOrderQueueListener = object : OrderQueueListener {
+    private val defaultOrderQueueListener = object :
+        OrderQueueListener {
         override fun onPush(order: Order) {
             println("$name start taking ${order.name}")
             orders.add(order)
 
-            val task = TruckTakingTask(this@Truck, order, defaultTruckTakingListener)
+            val task = TruckTakingTask(
+                this@Truck,
+                order,
+                defaultTruckTakingListener
+            )
             tasks.add(task)
             Thread(task).start()
         }
@@ -53,7 +58,8 @@ data class Truck(
     /**
      * Стандартный листенер, смотрит за своими задачами погрузки.
      */
-    private val defaultTruckTakingListener = object : TruckTakingListener {
+    private val defaultTruckTakingListener = object :
+        TruckTakingListener {
         override fun onComplete() {
             // удалить первую задачу из очереди,
             // так как она закончилась
