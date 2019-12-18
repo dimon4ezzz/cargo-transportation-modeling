@@ -51,7 +51,7 @@ data class Truck(
         }
 
         override fun isLast(): Boolean {
-            return orders.count() == 5
+            return orders.count() == 6
         }
     }
 
