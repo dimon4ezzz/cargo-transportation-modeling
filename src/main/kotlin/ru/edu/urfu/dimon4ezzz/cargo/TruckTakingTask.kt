@@ -1,14 +1,11 @@
 package ru.edu.urfu.dimon4ezzz.cargo
 
-import ru.edu.urfu.dimon4ezzz.cargo.models.Container
-import ru.edu.urfu.dimon4ezzz.cargo.models.ContainerShip
-import ru.edu.urfu.dimon4ezzz.cargo.models.Order
-import ru.edu.urfu.dimon4ezzz.cargo.models.Truck
-import java.lang.IllegalStateException
+import ru.edu.urfu.dimon4ezzz.cargo.models.*
 
 class TruckTakingTask(
     private val truck: Truck,
-    private val order: Order
+    private val order: Order,
+    private val listener: TruckTakingListener
 ) : Runnable {
     /**
      * Время забирания заказа из точки.
@@ -18,16 +15,14 @@ class TruckTakingTask(
     private val takingTime: Long = (30 / 5) * 1000 // 6s
 
     override fun run() {
-        truck.containerShip?.let {
-            if (!it.add(order)) {
-                throw IllegalStateException("cannot add order into container ship")
-            }
-        }?:let {
+        truck.state = TruckState.TAKING
+        truck.containerShip?.add(order) ?:let {
             truck.containerShip = buildContainerShip(order)
         }
 
         Thread.sleep(takingTime)
         println("${truck.name} took ${order.name}")
+        listener.onComplete()
     }
 
     private fun buildContainerShip(order: Order) = ContainerShip(

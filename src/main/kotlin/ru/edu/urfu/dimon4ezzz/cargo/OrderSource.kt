@@ -47,6 +47,10 @@ class OrderSource (
         listeners.add(listener)
     }
 
+    fun removeOrderQueueListener() {
+        listeners.remove()
+    }
+
     /**
      * Генерирует один заказ.
      */
