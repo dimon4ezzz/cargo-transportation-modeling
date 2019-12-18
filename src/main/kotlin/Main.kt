@@ -34,7 +34,7 @@ fun main() {
     timer.scheduleAtFixedRate(
         Modeller(),
         1000,
-        5000
+        1000
     )
 
     // через 2 мин 24 сек «выключить» потоки
