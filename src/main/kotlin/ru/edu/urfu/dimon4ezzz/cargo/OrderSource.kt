@@ -1,10 +1,8 @@
 package ru.edu.urfu.dimon4ezzz.cargo
 
-import ru.edu.urfu.dimon4ezzz.cargo.listeners.OrderQueueListener
 import ru.edu.urfu.dimon4ezzz.cargo.models.Order
 import ru.edu.urfu.dimon4ezzz.cargo.models.Point
 import java.lang.IllegalStateException
-import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.random.Random
 
 /**
@@ -17,39 +15,25 @@ class OrderSource (
     private val currentPoint: Point
 ) : Runnable {
     /**
-     * Очередь заказов в пункте.
-     */
-    private val orderQueue = ConcurrentLinkedQueue<Order>()
-
-    /**
-     * Слушатели заказов.
-     */
-    private var listeners = ConcurrentLinkedQueue<OrderQueueListener>()
-
-    /**
      * Итерационная переменная для заказов.
      */
     private var ordersAmount = 0L
 
     /**
+     * Аукцион заказов
+     */
+    val auction = Auction()
+
+    /**
      * При работе этой задачи просто создаётся новый заказ и кладётся в очередь.
      */
     override fun run() {
-        orderQueue.push(generateOrder())
+        auction.addOrder(generateOrder())
 
+        // если рандом решит, что нужно два,
+        // посылает ещё один заказ в очередь
         if (Random.nextInt(2) == 1)
-            orderQueue.push(generateOrder())
-    }
-
-    /**
-     * Добавление слушателя очереди.
-     */
-    fun addOrderQueueListener(listener: OrderQueueListener) {
-        listeners.add(listener)
-    }
-
-    fun removeOrderQueueListener() {
-        listeners.remove()
+            auction.addOrder(generateOrder())
     }
 
     /**
@@ -73,24 +57,5 @@ class OrderSource (
         }
 
         return point
-    }
-
-    /**
-     * Добавляет заказ в очередь, оповещает первого в списке слушателя и удаляет его.
-     *
-     * Расширяет возможности ConcurrentLinkedQueue.
-     * @see ConcurrentLinkedQueue
-     */
-    private fun ConcurrentLinkedQueue<Order>.push(order: Order) {
-        println("Получен новый заказ ${order.name} в ${order.destination.name}")
-        add(order)
-
-        if (!listeners.isEmpty()) {
-            // оповестить листенер
-            listeners.first().onPush(poll())
-            // удалить первый в очереди листенер
-            if (listeners.first().isLast())
-                listeners.remove()
-        }
     }
 }

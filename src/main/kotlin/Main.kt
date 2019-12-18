@@ -1,3 +1,5 @@
+import org.jgrapht.graph.DefaultEdge
+import org.jgrapht.graph.DefaultUndirectedGraph
 import ru.edu.urfu.dimon4ezzz.cargo.InformationHolder
 import ru.edu.urfu.dimon4ezzz.cargo.tasks.Modeller
 import ru.edu.urfu.dimon4ezzz.cargo.models.*
@@ -20,6 +22,9 @@ private lateinit var timer: Timer
 fun main() {
     println("Генерируем пункты")
     InformationHolder.points = generatePoints()
+
+    println("Инициализируем граф")
+    InformationHolder.graph = graphInit()
 
     println("Генерируем машины")
     trucks = generateTrucks()
@@ -53,6 +58,44 @@ private fun generatePoints(amount: Int = POINTS_AMOUNT) = IntStream.range(0, amo
             name = it.toString()
         )
     }.toList()
+
+private fun graphInit(): DefaultUndirectedGraph<Point, DefaultEdge> {
+    val graph = DefaultUndirectedGraph<Point, DefaultEdge>(DefaultEdge::class.java)
+
+    InformationHolder.points?.let {points ->
+        // добавляет все пункты
+        points.forEach {point ->
+            graph.addVertex(point)
+        }
+
+        graph.addEdge(points[0], points[3])
+        graph.addEdge(points[3], points[4])
+
+        graph.addEdge(points[3], points[2])
+        graph.addEdge(points[2], points[1])
+
+        graph.addEdge(points[0], points[8])
+        graph.addEdge(points[8], points[9])
+        graph.addEdge(points[9], points[5])
+
+        graph.addEdge(points[0], points[13])
+        graph.addEdge(points[13], points[19])
+        graph.addEdge(points[19], points[14])
+        graph.addEdge(points[19], points[18])
+
+        graph.addEdge(points[0], points[7])
+        graph.addEdge(points[7], points[6])
+        graph.addEdge(points[6], points[10])
+        graph.addEdge(points[10], points[15])
+        graph.addEdge(points[15], points[16])
+        graph.addEdge(points[16], points[11])
+        graph.addEdge(points[16], points[17])
+        graph.addEdge(points[17], points[12])
+        graph.addEdge(points[12], points[0])
+    }
+
+    return graph
+}
 
 /**
  * Генерирует машины в случайных местах.

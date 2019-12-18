@@ -1,5 +1,9 @@
 package ru.edu.urfu.dimon4ezzz.cargo
 
+import org.jgrapht.GraphPath
+import org.jgrapht.alg.shortestpath.DijkstraShortestPath
+import org.jgrapht.graph.DefaultEdge
+import org.jgrapht.graph.DefaultUndirectedGraph
 import ru.edu.urfu.dimon4ezzz.cargo.models.Point
 
 /**
@@ -9,6 +13,7 @@ import ru.edu.urfu.dimon4ezzz.cargo.models.Point
  */
 object InformationHolder {
     var points: List<Point>? = null
+    var graph = DefaultUndirectedGraph<Point, DefaultEdge>(DefaultEdge::class.java)
 
     /**
      * Передаёт случайную точку в модели.
@@ -20,4 +25,7 @@ object InformationHolder {
             ?.let { return it.random() }
             ?:throw IllegalStateException("list of points did not set")
     }
+
+    fun getPath(location: Point, destination: Point): GraphPath<Point, DefaultEdge> =
+        DijkstraShortestPath.findPathBetween(graph, location, destination)
 }
