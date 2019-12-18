@@ -7,6 +7,13 @@ import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
 
 /**
+ * Время движения по одному ребру графа пунктов.
+ *
+ * 5 минут → 1 секунда, значит 1 час → 12 секунд.
+ */
+private const val movingTime: Long = 60 / 5 // 12s
+
+/**
  * Грузовик.
  */
 data class Truck(
@@ -25,13 +32,6 @@ data class Truck(
      */
     var state: TruckState
 ) {
-    /**
-     * Время движения по одному ребру графа пунктов.
-     *
-     * 5 минут → 1 секунда, значит 1 час → 12 секунд.
-     */
-    private val movingTime: Long = 60 / 5 // 12s
-
     /**
      * Стандартный листенер, смотрит за очередью заказов в пункте.
      */
