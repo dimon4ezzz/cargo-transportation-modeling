@@ -82,10 +82,6 @@ data class Truck(
     private var tasks = ArrayDeque<TruckTakingTask>()
 
     init {
-        setOrderSourceListener()
-    }
-
-    private fun setOrderSourceListener() {
         location.orderSource.addOrderQueueListener(defaultOrderQueueListener)
     }
 }
