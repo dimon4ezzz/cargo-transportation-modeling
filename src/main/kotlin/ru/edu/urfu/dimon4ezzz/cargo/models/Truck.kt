@@ -14,7 +14,7 @@ import java.util.*
  *
  * 5 минут → 1 секунда, значит 1 час → 12 секунд.
  */
-private const val movingTime: Long = 60 / 5 // 12s
+private const val movingTime: Long = (60 / 5) * 1000 // 12s
 
 /**
  * Грузовик.
