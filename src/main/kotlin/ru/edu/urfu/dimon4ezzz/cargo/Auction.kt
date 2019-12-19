@@ -39,6 +39,7 @@ class Auction {
      * Проверяет, нужны ли заказы следующим по очереди слушателям,
      * так как до них не дошли события `onPush`.
      */
+    // TODO удалять не только первый в списке
     fun removeOrderQueueListener() {
         listeners.removeAt(0)
         orders.forEach {

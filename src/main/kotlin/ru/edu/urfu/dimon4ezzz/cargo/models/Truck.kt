@@ -3,6 +3,7 @@ package ru.edu.urfu.dimon4ezzz.cargo.models
 import org.jgrapht.GraphPath
 import org.jgrapht.graph.DefaultEdge
 import org.jgrapht.graph.GraphWalk
+import ru.edu.urfu.dimon4ezzz.cargo.GraphWalkBuilder
 import ru.edu.urfu.dimon4ezzz.cargo.InformationHolder
 import ru.edu.urfu.dimon4ezzz.cargo.listeners.OrderQueueListener
 import ru.edu.urfu.dimon4ezzz.cargo.listeners.TruckTakingListener
@@ -82,15 +83,27 @@ data class Truck(
                 }
                 // поехали
                 state = TruckState.MOVING
-                println("$name едет ${path()}")
+                println("$name едет ${pathToString()}")
+                move()
             }
         }
     }
 
+    private var cachedPath: GraphPath<Point, DefaultEdge>? = null
+
+    private var orders = 0
+    private var tasks = ArrayDeque<TruckTakingTask>()
+
     /**
-     * TODO дебаг функция
+     * Прикреплённый контейнеровоз.
      */
-    private fun path(): String {
+    var containerShip: ContainerShip? = null
+
+    init {
+        location.orderSource.auction.addOrderQueueListener(defaultOrderQueueListener)
+    }
+
+    private fun pathToString(): String {
         val joiner = StringJoiner("-")
         cachedPath!!.vertexList.forEach {
             joiner.add(it.name)
@@ -119,10 +132,7 @@ data class Truck(
                 // если из конца текущего пути проехать дешевле
                 if (shortestPathFromCachedPathEnd.edgeList.count() < shortestPathToOrderDestination.edgeList.count()) {
                     // нужно сложить два путя
-                    val old = GraphWalk<Point, DefaultEdge>(InformationHolder.graph, it.startVertex, it.endVertex, it.vertexList, it.edgeList, it.weight)
-                    val new = GraphWalk<Point, DefaultEdge>(InformationHolder.graph, shortestPathFromCachedPathEnd.startVertex, shortestPathFromCachedPathEnd.endVertex, shortestPathFromCachedPathEnd.vertexList, shortestPathFromCachedPathEnd.edgeList, shortestPathFromCachedPathEnd.weight)
-                    cachedPath = old.concat(new) { old.weight + new.weight }
-
+                    cachedPath = GraphWalkBuilder.concat(it, shortestPathFromCachedPathEnd)
                     return true
                 }
 
@@ -142,17 +152,7 @@ data class Truck(
         return false
     }
 
-    private var cachedPath: GraphPath<Point, DefaultEdge>? = null
-
-    private var orders = 0
-    private var tasks = ArrayDeque<TruckTakingTask>()
-
-    /**
-     * Прикреплённый контейнеровоз.
-     */
-    var containerShip: ContainerShip? = null
-
-    init {
-        location.orderSource.auction.addOrderQueueListener(defaultOrderQueueListener)
+    private fun move() {
+        // двигается к первому по пути месту назначения
     }
 }
