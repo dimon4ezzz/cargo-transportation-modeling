@@ -8,7 +8,7 @@ import kotlin.random.Random
 /**
  * Источник заказов.
  */
-class OrderSource (
+class OrderSource(
     /**
      * Пункт, из которого генерируются заказы.
      */

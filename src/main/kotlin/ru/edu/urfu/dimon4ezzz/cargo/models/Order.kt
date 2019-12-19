@@ -3,7 +3,7 @@ package ru.edu.urfu.dimon4ezzz.cargo.models
 /**
  * Заказ.
  */
-data class Order (
+data class Order(
     /**
      * Название заказа.
      */
