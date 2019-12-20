@@ -152,7 +152,11 @@ data class Truck(
         // выгружает
         state = TruckState.GIVING
         // ждём, пока разгрузится
-        tasks.add(TruckGivingTask(defaultTruckActionListener))
+        tasks.add(TruckGivingTask(object : TruckActionListener {
+            override fun onComplete() {
+                tasks.remove()
+            }
+        }))
         Thread(tasks.last).start()
     }
 }
