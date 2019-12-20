@@ -80,7 +80,7 @@ data class Truck(
             tasks.remove()
             // если больше задач нет
             // или грузовик полон заказами
-            if (tasks.count() == 0 || router.isFull()) {
+            if (tasks.isEmpty() || router.isFull()) {
                 // удалить свой листенер
                 // если листенер не найдётся,
                 // ничего страшного, пропустит
