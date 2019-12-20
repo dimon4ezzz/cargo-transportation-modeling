@@ -88,7 +88,10 @@ private fun graphInit(): SimpleGraph<Point, DefaultEdge> {
         graph.addEdge(points[19], points[14])
         graph.addEdge(points[19], points[18])
 
-        graph.addEdge(points[0], points[7])
+        // пока с остовным деревом посидим
+        // потому что просчёты пока ведутся
+        // не по рёбрам, а по кратчайшим путям
+//        graph.addEdge(points[0], points[7])
         graph.addEdge(points[7], points[6])
         graph.addEdge(points[6], points[10])
         graph.addEdge(points[10], points[15])
