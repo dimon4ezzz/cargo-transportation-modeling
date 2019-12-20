@@ -98,6 +98,9 @@ class Router(
         return false
     }
 
+    fun isEmpty(): Boolean =
+        orders.isEmpty()
+
     /**
      * @return полна ли очередь заказов,
      *  которые везёт грузовик

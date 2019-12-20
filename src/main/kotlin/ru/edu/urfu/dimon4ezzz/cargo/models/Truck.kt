@@ -157,6 +157,17 @@ data class Truck(
         tasks.add(TruckGivingTask(object : TruckActionListener {
             override fun onComplete() {
                 tasks.remove()
+
+                // если заказов нет,
+                if (router.isEmpty()) {
+                    // состояние «спит»
+                    state = TruckState.SLEEPING
+                }
+                // если заказы есть, едем дальше
+                else {
+                    state = TruckState.MOVING
+                    move()
+                }
             }
         }))
         Thread(tasks.last).start()
