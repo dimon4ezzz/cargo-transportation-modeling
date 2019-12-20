@@ -8,11 +8,26 @@ import java.util.concurrent.ConcurrentLinkedQueue
  * Аукцион заказов для пункта.
  */
 class Auction {
+    /**
+     * Очередь для заказов, которые никто не взял.
+     */
     private val orders = ConcurrentLinkedQueue<Order>()
-    private val listeners = ArrayList<OrderQueueListener>()
 
+    /**
+     * Map из листенеров, которые слушают новые заказы.
+     */
+    private val listeners = HashMap<Long, OrderQueueListener>()
+
+    /**
+     * Итератор для листенеров.
+     */
+    private var listerersAmount = 0L
+
+    /**
+     * Новый заказ появляется.
+     */
     fun addOrder(order: Order) {
-        println("появился заказ ${order.name}-${order.destination.name}")
+        println("появился заказ ${order.name}")
         // если кто-то берётся за заказ, он его забирает
         // иначе (условие внутри if) — кладётся в очередь
         if (!doesAnybodyTakeThis(order)) {
@@ -27,10 +42,16 @@ class Auction {
      * этот заказ для него не последний,
      * то добавляет его в список слушателей.
      */
-    fun addOrderQueueListener(listener: OrderQueueListener) {
-        if (!checkOrdersAndAskItLast(listener)) {
-            listeners.add(listener)
-        }
+    fun addOrderQueueListener(listener: OrderQueueListener): Long {
+        checkOrdersAndAskItLast(listener)
+        listeners[listerersAmount] = listener
+
+        // пофик на самом деле,
+        // сколько итератор просуммировался,
+        // в аукционе итератор по сути
+        // уникальное число, по которому можно
+        // идентифицировать листенер
+        return listerersAmount++
     }
 
     /**
@@ -39,9 +60,11 @@ class Auction {
      * Проверяет, нужны ли заказы следующим по очереди слушателям,
      * так как до них не дошли события `onPush`.
      */
-    // TODO удалять не только первый в списке
-    fun removeOrderQueueListener() {
-        listeners.removeAt(0)
+    fun removeOrderQueueListener(key: Long) {
+        // если такого листенера нет, просто вернёт null,
+        // а его тут никто не проверит
+        listeners.remove(key)
+        // опросить остальных, нужны ли им заказы
         orders.forEach {
             doesAnybodyTakeThis(it)
         }
@@ -52,17 +75,10 @@ class Auction {
      */
     private fun doesAnybodyTakeThis(order: Order): Boolean {
         // пройдётся по всем листенерам
-        listeners.forEach {
+        listeners.forEach { (_, value) ->
             // если кто-то взялся
-            if (it.onPush(order)) {
-                // если для него — это последний,
-                // удалить его из списка слушателей
-                if (it.isLast()) {
-                    listeners.remove(it)
-                }
-
+            if (value.onPush(order))
                 return true
-            }
         }
 
         return false
@@ -73,12 +89,7 @@ class Auction {
      * Если какой-то заказ ему подходит, и этот заказ для него последний,
      * то передаёт `true`, иначе его можно добавить с список слушателей.
      */
-    private fun checkOrdersAndAskItLast(listener: OrderQueueListener): Boolean {
-        // подходит ли заказ и удалить, если подходит
-        val took = orders.removeIf {
-            listener.onPush(it)
-        }
-
-        return took && listener.isLast()
+    private fun checkOrdersAndAskItLast(listener: OrderQueueListener) = orders.removeIf {
+        listener.onPush(it)
     }
 }

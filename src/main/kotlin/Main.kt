@@ -1,11 +1,14 @@
 import org.jgrapht.graph.DefaultEdge
-import org.jgrapht.graph.DefaultUndirectedGraph
+import org.jgrapht.graph.SimpleGraph
 import ru.edu.urfu.dimon4ezzz.cargo.InformationHolder
+import ru.edu.urfu.dimon4ezzz.cargo.models.Point
+import ru.edu.urfu.dimon4ezzz.cargo.models.Truck
+import ru.edu.urfu.dimon4ezzz.cargo.models.TruckState
 import ru.edu.urfu.dimon4ezzz.cargo.tasks.Modeller
-import ru.edu.urfu.dimon4ezzz.cargo.models.*
-import java.util.Timer
+import java.util.*
 import java.util.stream.IntStream
 import kotlin.streams.toList
+import kotlin.system.exitProcess
 
 private const val POINTS_AMOUNT = 20
 private const val TRUCKS_AMOUNT = 10
@@ -45,6 +48,8 @@ fun main() {
     // через 2 мин 24 сек «выключить» потоки
     Thread.sleep(DURATION)
     timer.cancel()
+    // TODO завершить все потоки рекурсивно
+    exitProcess(0)
 }
 
 /**
@@ -59,8 +64,8 @@ private fun generatePoints(amount: Int = POINTS_AMOUNT) = IntStream.range(0, amo
         )
     }.toList()
 
-private fun graphInit(): DefaultUndirectedGraph<Point, DefaultEdge> {
-    val graph = DefaultUndirectedGraph<Point, DefaultEdge>(DefaultEdge::class.java)
+private fun graphInit(): SimpleGraph<Point, DefaultEdge> {
+    val graph = SimpleGraph<Point, DefaultEdge>(DefaultEdge::class.java)
 
     InformationHolder.points?.let {points ->
         // добавляет все пункты

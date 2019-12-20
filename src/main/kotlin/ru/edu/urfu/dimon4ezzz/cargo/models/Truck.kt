@@ -1,21 +1,21 @@
 package ru.edu.urfu.dimon4ezzz.cargo.models
 
-import org.jgrapht.GraphPath
-import org.jgrapht.graph.DefaultEdge
-import org.jgrapht.graph.GraphWalk
-import ru.edu.urfu.dimon4ezzz.cargo.GraphWalkBuilder
 import ru.edu.urfu.dimon4ezzz.cargo.InformationHolder
+import ru.edu.urfu.dimon4ezzz.cargo.Router
 import ru.edu.urfu.dimon4ezzz.cargo.listeners.OrderQueueListener
-import ru.edu.urfu.dimon4ezzz.cargo.listeners.TruckTakingListener
+import ru.edu.urfu.dimon4ezzz.cargo.listeners.TruckActionListener
+import ru.edu.urfu.dimon4ezzz.cargo.tasks.TruckAction
+import ru.edu.urfu.dimon4ezzz.cargo.tasks.TruckGivingTask
 import ru.edu.urfu.dimon4ezzz.cargo.tasks.TruckTakingTask
 import java.util.*
+import kotlin.math.roundToLong
 
 /**
  * Время движения по одному ребру графа пунктов.
  *
  * 5 минут → 1 секунда, значит 1 час → 12 секунд.
  */
-private const val movingTime: Long = (60 / 5) * 1000 // 12s
+private const val MOVING_TIME: Long = (60 / 5) * 1000 // 12s
 
 /**
  * Грузовик.
@@ -41,118 +41,118 @@ data class Truck(
      */
     private val defaultOrderQueueListener = object :
         OrderQueueListener {
+        /**
+         * На событие получения нового заказа
+         * добавляет его себе в путевой лист,
+         * если путевой лист согласится.
+         *
+         * @return `true`, если согласен забрать этот заказ.
+         * @see Router.addOrder
+         */
         override fun onPush(order: Order): Boolean {
-            if (shouldIGetThis(order)) {
+            // Функция addOrder также проверяет,
+            // подходит ли этот заказ этому грузовику.
+            if (router.addOrder(order)) {
+                // пишет в консоль
                 println("$name taking ${order.name}")
-                orders++
-                val task = TruckTakingTask(this@Truck, order, defaultTruckTakingListener)
+                state = TruckState.TAKING
+                // создаёт задачу погрузки, и добавляет ей свой листенер
+                val task = TruckTakingTask(defaultTruckActionListener)
+                // добавляет в список незавершённых задач
                 tasks.add(task)
+                // запускает задачу
                 Thread(task).start()
                 return true
             }
 
             return false
         }
-
-        // по сути не нужен,
-        // говорит больше не предлагать заказов
-        // TODO возможно удалить, т. к. onPush возвращает,
-        //  берёт он заказ или нет
-        override fun isLast(): Boolean {
-            return orders == 6
-        }
     }
 
     /**
      * Стандартный листенер, смотрит за своими задачами погрузки.
      */
-    private val defaultTruckTakingListener = object :
-        TruckTakingListener {
+    private val defaultTruckActionListener = object :
+        TruckActionListener {
         override fun onComplete() {
             // удалить первую задачу из очереди,
             // так как она закончилась
             tasks.remove()
             // если больше задач нет
-            if (tasks.count() == 0) {
-                // и ещё может взять заказов
-                // (см. isLast() в OrderQueueListener —
-                // тот автоматически удаляет)
-                if (orders < 6) {
-                    // удалить свой листенер
-                    location.orderSource.auction.removeOrderQueueListener()
-                }
+            // или грузовик полон заказами
+            if (tasks.count() == 0 || router.isFull()) {
+                // удалить свой листенер
+                // если листенер не найдётся,
+                // ничего страшного, пропустит
+                location.orderSource
+                    .auction.removeOrderQueueListener(listenerId)
                 // поехали
-                state = TruckState.MOVING
-                println("$name едет ${pathToString()}")
                 move()
             }
         }
     }
 
-    private var cachedPath: GraphPath<Point, DefaultEdge>? = null
-
-    private var orders = 0
-    private var tasks = ArrayDeque<TruckTakingTask>()
+    /**
+     * Роутер смотрит за заказами, которые закреплены за грузовиком.
+     */
+    private val router: Router = Router(this)
 
     /**
-     * Прикреплённый контейнеровоз.
+     * Очередь заданий на погрузку.
      */
-    var containerShip: ContainerShip? = null
+    private val tasks = ArrayDeque<TruckAction>()
 
+    /**
+     * ID листенера на аукционе.
+     *
+     * Показывает, какой листенер
+     * в списке листенеров относится к этому грузовику.
+     */
+    private var listenerId: Long = 0
+
+    /**
+     * Дефолтное действие на конструктор.
+     */
     init {
-        location.orderSource.auction.addOrderQueueListener(defaultOrderQueueListener)
-    }
-
-    private fun pathToString(): String {
-        val joiner = StringJoiner("-")
-        cachedPath!!.vertexList.forEach {
-            joiner.add(it.name)
-        }
-        return joiner.toString()
+        setListenerToLocationSource()
     }
 
     /**
-     * Говорит, стоит ли грузовику брать этот заказ.
-     * Проверяет путь, по которому собирается этот грузовик проехать.
+     * Задаёт в текущем местоположении свой листенер заказов,
+     * чтобы этому грузовику показывали список заказов.
      */
-    private fun shouldIGetThis(order: Order): Boolean {
-        // если у грузовика уже есть путь,
-        // посмотреть, по пути ли ему довезти этот заказ
-        cachedPath?.let {
-            if (it.vertexList.contains(order.destination)) {
-                return true
-            } else {
-                // где-то нужно найти такой алгоритм,
-                // который бы не считал путь из конца этого пути,
-                // так как если точка находится, условно говоря, сзади,
-                // на неё придётся потратить 2x текущего пути + ещё до точки доехать
-                val shortestPathToOrderDestination = InformationHolder.getPath(location, order.destination)
-                val shortestPathFromCachedPathEnd = InformationHolder.getPath(it.endVertex, order.destination)
-
-                // если из конца текущего пути проехать дешевле
-                if (shortestPathFromCachedPathEnd.edgeList.count() < shortestPathToOrderDestination.edgeList.count()) {
-                    // нужно сложить два путя
-                    cachedPath = GraphWalkBuilder.concat(it, shortestPathFromCachedPathEnd)
-                    return true
-                }
-
-                // по-другому не поедет, так как
-                // если из этой точки выехать дешевле,
-                // а из конечной дороже, значит
-                // точка доставки не на текущем пути (см. пред. if)
-                // или доступна по совершенно другому пути
-            }
-        }?:let {
-            // если грузовик ещё не решил до этого,
-            // куда он поедет, он поедет на этот заказ
-            cachedPath = InformationHolder.getPath(location, order.destination)
-            return true
-        }
-
-        return false
+    private fun setListenerToLocationSource() {
+        listenerId = location.orderSource
+            .auction.addOrderQueueListener(defaultOrderQueueListener)
     }
 
+    /**
+     * Двигается ко следующему пункту.
+     */
     private fun move() {
         // двигается к первому по пути месту назначения
+        println("$name едет ${router.getPathAsString()}")
+        state = TruckState.MOVING
+        // берёт следующую точку
+        val point = router.getNextPointAndRecalculate()
+        // узнаёт, сколько до неё ехать
+        val pathWeight = InformationHolder.getPath(location, point).weight
+        // умножает на время одного часа
+        val pathTime = (pathWeight * MOVING_TIME).roundToLong()
+        // ждёт, пока «поездка не закончится»
+        Thread.sleep(pathTime)
+        // записывает себя в эту точку
+        location = point
+        // задаёт свой листенер в эту точку
+        setListenerToLocationSource()
+        // удяляет из своего роутера заказы, которые привёз
+        router.finishOrder()
+
+        println("$name is in ${location.name} now!")
+        // выгружает
+        state = TruckState.GIVING
+        // ждём, пока разгрузится
+        tasks.add(TruckGivingTask(defaultTruckActionListener))
+        Thread(tasks.last).start()
     }
 }

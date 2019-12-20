@@ -1,9 +1,11 @@
 package ru.edu.urfu.dimon4ezzz.cargo
 
+import org.jgrapht.graph.DefaultEdge
+import org.jgrapht.graph.GraphWalk
 import ru.edu.urfu.dimon4ezzz.cargo.models.Order
 import ru.edu.urfu.dimon4ezzz.cargo.models.Point
-import java.lang.IllegalStateException
 import kotlin.random.Random
+import kotlin.system.exitProcess
 
 /**
  * Источник заказов.
@@ -39,13 +41,20 @@ class OrderSource(
     /**
      * Генерирует один заказ.
      */
-    private fun generateOrder() = Order(
-        name = "${currentPoint.name}-${ordersAmount++}",
-        destination = getRandomPoint()
-    )
+    private fun generateOrder(): Order {
+        val destination = getRandomPoint()
+        val path = InformationHolder.getPath(currentPoint, destination)
+
+        return Order(
+            name = "${currentPoint.name}-${ordersAmount++}-${destination.name}",
+            destination = destination,
+            path = path
+        )
+    }
 
     /**
      * Генерирует случайный пункт, за исключением текущего.
+     * TODO перенести в InformationHolder
      *
      * @throws IllegalStateException когда не задан список пунктов
      */
