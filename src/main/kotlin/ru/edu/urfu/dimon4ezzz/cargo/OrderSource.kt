@@ -1,11 +1,8 @@
 package ru.edu.urfu.dimon4ezzz.cargo
 
-import org.jgrapht.graph.DefaultEdge
-import org.jgrapht.graph.GraphWalk
 import ru.edu.urfu.dimon4ezzz.cargo.models.Order
 import ru.edu.urfu.dimon4ezzz.cargo.models.Point
 import kotlin.random.Random
-import kotlin.system.exitProcess
 
 /**
  * Источник заказов.
