@@ -16,6 +16,10 @@ class OrderSource(
      */
     private val currentPoint: Point
 ) : Runnable {
+    override fun toString(): String {
+        return "os-${currentPoint.name}"
+    }
+
     /**
      * Итерационная переменная для заказов.
      */

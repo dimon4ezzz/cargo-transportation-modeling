@@ -18,6 +18,10 @@ class Router(
     /**
      * Стандартный компаратор пунктов:
      * кто ближе к местоположению грузовика, тот и ближе к началу очереди.
+     *
+     * FIXME не умеет учитывать порядок в пути,
+     *  если следующая точка ближе
+     *  скорее всего нужно остовное дерево
      */
     private var pointComparator = PointComparator(truck.location)
 
@@ -117,8 +121,7 @@ class Router(
         println("осторожно, двери закрываются!")
         println("следующая остановка ${point.name} (${truck.name})")
         // удалить из path всё до этой точки
-        path = GraphWalkBuilder.subtract(path, InformationHolder.getPath(truck.location, point))
-
+        path = GraphWalkBuilder.deletePoint(path, point) as GraphWalk<Point, DefaultEdge>
         return point
     }
 

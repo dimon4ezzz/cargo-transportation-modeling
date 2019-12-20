@@ -86,8 +86,10 @@ data class Truck(
                 // ничего страшного, пропустит
                 location.orderSource
                     .auction.removeOrderQueueListener(listenerId)
-                // поехали
-                move()
+                // поехали, если уже не едем
+                // см. проблемы с многопоточностью
+                if (state != TruckState.MOVING)
+                    move()
             }
         }
     }
