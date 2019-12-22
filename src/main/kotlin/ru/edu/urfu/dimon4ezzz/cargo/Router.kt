@@ -51,7 +51,7 @@ class Router(
     private var orders = ArrayList<Order>()
 
     fun addOrder(order: Order): Boolean {
-        if (orders.count() > 5) return false
+        if (orders.count() > 5 || order.path.weight > 3) return false
 
         // если путь грузовика ещё не задан
         // то есть в пути только одна вершина
