@@ -42,7 +42,7 @@ class Router(
      *
      * FIXME перестроить путь по приезде в новый пункт
      */
-    private var path = GraphWalk.singletonWalk(InformationHolder.graph, truck.location)
+    private var path: GraphPath<Point, DefaultEdge> = GraphWalk.singletonWalk(InformationHolder.graph, truck.location)
 
     /**
      * Заказы, которые себе взял грузовик.
