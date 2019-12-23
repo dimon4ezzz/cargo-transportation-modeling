@@ -21,7 +21,7 @@ class Auction {
     /**
      * Итератор для листенеров.
      */
-    private var listerersAmount = 0L
+    private var listenersAmount = 0L
 
     /**
      * Новый заказ появляется.
@@ -44,14 +44,14 @@ class Auction {
      */
     fun addOrderQueueListener(listener: OrderQueueListener): Long {
         checkOrdersAndAskItLast(listener)
-        listeners[listerersAmount] = listener
+        listeners[listenersAmount] = listener
 
         // пофик на самом деле,
         // сколько итератор просуммировался,
         // в аукционе итератор по сути
         // уникальное число, по которому можно
         // идентифицировать листенер
-        return listerersAmount++
+        return listenersAmount++
     }
 
     /**
