@@ -2,6 +2,7 @@ package ru.edu.urfu.dimon4ezzz.cargo
 
 import ru.edu.urfu.dimon4ezzz.cargo.listeners.OrderQueueListener
 import ru.edu.urfu.dimon4ezzz.cargo.models.Order
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 
 /**
@@ -16,7 +17,7 @@ class Auction {
     /**
      * Map из листенеров, которые слушают новые заказы.
      */
-    private val listeners = HashMap<Long, OrderQueueListener>()
+    private val listeners = ConcurrentHashMap<Long, OrderQueueListener>()
 
     /**
      * Итератор для листенеров.
