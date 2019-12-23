@@ -149,8 +149,6 @@ class Router(
         // добавляем в очередь точку назначения
         pointsQueue.add(order.destination)
         println("${truck.name} уже едет по ${path.getStringForLog()}")
-        // добавляем в общий путь следования весь путь до точки
-//        path = GraphWalkBuilder.concat(path, order.path)
         // добавляем заказ в число заказов
         orders.add(order)
     }
