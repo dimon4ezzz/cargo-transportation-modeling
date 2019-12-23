@@ -15,4 +15,5 @@ data class Point(
      * Источник заказов в этом пункте.
      */
     var orderSource = OrderSource(this)
+    // TODO раутинг
 }

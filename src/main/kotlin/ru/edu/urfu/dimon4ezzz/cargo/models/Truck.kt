@@ -7,7 +7,7 @@ import ru.edu.urfu.dimon4ezzz.cargo.listeners.TruckActionListener
 import ru.edu.urfu.dimon4ezzz.cargo.tasks.TruckAction
 import ru.edu.urfu.dimon4ezzz.cargo.tasks.TruckGivingTask
 import ru.edu.urfu.dimon4ezzz.cargo.tasks.TruckTakingTask
-import java.util.*
+import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.math.roundToLong
 
 /**
@@ -54,7 +54,7 @@ data class Truck(
             // подходит ли этот заказ этому грузовику.
             if (router.addOrder(order)) {
                 // пишет в консоль
-                println("$name taking ${order.name}")
+                println("$name взял ${order.name}")
                 state = TruckState.TAKING
                 // создаёт задачу погрузки, и добавляет ей свой листенер
                 val task = TruckTakingTask(defaultTruckActionListener)
@@ -75,14 +75,12 @@ data class Truck(
     private val defaultTruckActionListener = object :
         TruckActionListener {
         override fun onComplete() {
-//            println("погрузка на $name завершилась")
             // удалить первую задачу из очереди,
             // так как она закончилась
             tasks.remove()
             // если больше задач нет
             // или грузовик полон заказами
             if (tasks.isEmpty() || router.isFull()) {
-//                println("$name больше не хочет получать заказов")
                 // удалить свой листенер
                 // если листенер не найдётся,
                 // ничего страшного, пропустит
@@ -104,7 +102,7 @@ data class Truck(
     /**
      * Очередь заданий на погрузку.
      */
-    private val tasks = ArrayDeque<TruckAction>()
+    private val tasks = ConcurrentLinkedQueue<TruckAction>()
 
     /**
      * ID листенера на аукционе.
@@ -135,7 +133,6 @@ data class Truck(
      */
     private fun move() {
         // двигается к первому по пути месту назначения
-//        println("$name едет ${router.getPathAsString()}")
         state = TruckState.MOVING
         // берёт следующую точку
         val point = router.getNextPointAndRecalculate()
@@ -152,7 +149,7 @@ data class Truck(
         // удяляет из своего роутера заказы, которые привёз
         router.finishOrder()
 
-        println("$name is in ${location.name} now!")
+        println("$name приехал в ${location.name}")
         // выгружает
         state = TruckState.GIVING
         // ждём, пока разгрузится
@@ -172,6 +169,6 @@ data class Truck(
                 }
             }
         }))
-        Thread(tasks.last).start()
+        Thread(tasks.last()).start()
     }
 }

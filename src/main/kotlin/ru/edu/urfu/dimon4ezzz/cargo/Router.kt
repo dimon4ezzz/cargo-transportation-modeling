@@ -1,15 +1,16 @@
 package ru.edu.urfu.dimon4ezzz.cargo
 
 import org.jgrapht.GraphPath
+import org.jgrapht.Graphs
 import org.jgrapht.graph.DefaultEdge
 import org.jgrapht.graph.GraphWalk
 import ru.edu.urfu.dimon4ezzz.cargo.comparators.PointComparator
 import ru.edu.urfu.dimon4ezzz.cargo.models.Order
 import ru.edu.urfu.dimon4ezzz.cargo.models.Point
 import ru.edu.urfu.dimon4ezzz.cargo.models.Truck
+import java.lang.Integer.min
 import java.util.*
 import java.util.concurrent.CopyOnWriteArrayList
-import kotlin.collections.ArrayList
 
 private const val MAX_PATH_LENGTH = 3
 
@@ -62,23 +63,29 @@ class Router(
         }
         // если путь грузовика включает в себя точку назначения
         else if (path.vertexList.contains(order.destination)) {
-            addToQueues(order)
+            // добавляем в очередь точку назначения
+            pointsQueue.add(order.destination)
+            // добавляем заказ в число заказов
+            orders.add(order)
             return true
         }
         // если путь грузовика меньше трёх вершин
         // 2 + текущая (1) = 3
         else if (path.weight < MAX_PATH_LENGTH) {
             // если такой путь нашёлся
-            getMatchPath(order.path)?.let {
-                println("${truck.name} нашёл трансферный путь ${it.getStringForLog()}")
-                // задать свой путь им
-                path = it
-                // остаток пути записать в заказ
-                order.path = deletePoint(order.path, it.endVertex)
-                return true
-            }?:let {
-                println("${truck.name} против добавления ${order.name}")
-                return false
+            try {
+                getMatchPath(order.path)?.let {
+                    // задать свой путь им
+                    path = it
+                    // остаток пути записать в заказ
+                    order.path = deletePoint(order.path, it.endVertex)
+                    order.name += "-t${it.endVertex.name}"
+                    return true
+                } ?: let {
+                    return false
+                }
+            } catch (e: IndexOutOfBoundsException) {
+                error("${truck.name} не справился с вычислением заказа ${order.name}\nошибка: ${e.message}")
             }
         }
         // если путь заказа меньше, чем 3, и он не прошёл проверки выше,
@@ -90,16 +97,18 @@ class Router(
             // если существует точка передачи
             //  т.е. путь заказа и грузовика совпадает
             getTransferPoint(order.path)?.let {
-                println("${truck.name} нашёл трансферную точку ${it.name}")
-                // добавляем его в очередь
-                // TODO если в текущем пути < 3, добавить как дальнюю точку
-                addToQueues(order)
                 // задать в самом заказе путь как остаток пути
                 // от передаточной точки до точки назначения
                 order.path = deletePoint(order.path, it)
+                order.name += "-t${it.name}"
+                // добавляем его в очередь
+                // TODO если в текущем пути < 3, добавить как дальнюю точку
+                // добавляем в очередь точку назначения
+                pointsQueue.add(it)
+                // добавляем заказ в число заказов
+                orders.add(order)
                 return true
             }?:let {
-//                println("${truck.name} против добавления ${order.name}")
                 return false
             }
         }
@@ -126,10 +135,7 @@ class Router(
      * и удаляет её из списка и из общего пути.
      */
     fun getNextPointAndRecalculate(): Point {
-//        println("${truck.name} посетит $pointsQueue")
         val point = pointsQueue.poll()
-//        println("осторожно, двери закрываются!")
-//        println("следующая остановка ${point.name} (${truck.name})")
         // удалить из path всё до этой точки
         path = deletePoint(path, point) as GraphWalk<Point, DefaultEdge>
         return point
@@ -192,16 +198,6 @@ class Router(
         pointsQueue.add(endVertex)
         orders.add(order)
 
-        println("${truck.name} инициирует путь ${path.getStringForLog()}")
-    }
-
-    private fun addToQueues(order: Order) {
-        println("${truck.name} добавляет в очередь ${order.name}")
-        // добавляем в очередь точку назначения
-        pointsQueue.add(order.destination)
-        println("${truck.name} уже едет по ${path.getStringForLog()}")
-        // добавляем заказ в число заказов
-        orders.add(order)
     }
 
     /**
@@ -218,7 +214,6 @@ class Router(
     ): GraphWalk<Point, DefaultEdge> {
         val walk1 = path1 as GraphWalk<Point, DefaultEdge> // cast
         val walk2 = path2 as GraphWalk<Point, DefaultEdge> // cast
-//        println("соединяю ${walk1.getStringForLog()} и ${walk2.getStringForLog()}")
         return walk1.concat(walk2) { walk1.weight + walk2.weight }
     }
 
@@ -232,13 +227,24 @@ class Router(
             return GraphWalk.singletonWalk(InformationHolder.graph, point)
 
         val vertexList: CopyOnWriteArrayList<Point> = CopyOnWriteArrayList(path.vertexList)
-        vertexList.forEach {
-            if (it == point)
-                return@forEach
+        for (v in vertexList) {
+            if (v == point) {
+                break
+            }
 
-            vertexList.remove(it)
+            vertexList.remove(v)
         }
 
+        // если останется всего лишь одно ребро,
+        //  в этом списке будет лишь одна вершина,
+        //  а значит, нужно отдавать путь из одного ребра
+        if (vertexList.count() == 1) {
+            val replaced = vertexList[0]
+            vertexList[0] = Graphs.getOppositeVertex(InformationHolder.graph, path.edgeList.last(), replaced)
+            vertexList.add(replaced)
+        }
+
+        // TODO вес рёбер нужно учитывать
         val weight = vertexList.count().toDouble()
 
         return GraphWalk<Point, DefaultEdge>(
@@ -259,7 +265,7 @@ class Router(
         for (i in 0 until currentLength) {
             endVertex = if (path.edgeList[i] == orderPath.edgeList[i]) {
                 if (i == currentLength - 1) {
-                    orderPath.vertexList[MAX_PATH_LENGTH + 1]
+                    orderPath.vertexList[min(orderPath.length, MAX_PATH_LENGTH + 1)]
                 } else {
                     orderPath.vertexList[i + 1]
                 }
@@ -284,7 +290,7 @@ class Router(
         // грузовик не поедет дальше третьего пункта
         for (i in 1 until MAX_PATH_LENGTH) {
             if (path.vertexList[i] == orderPath.vertexList[i])
-                lastMatch = path.vertexList[i + 1]
+                lastMatch = path.vertexList[i]
         }
 
         return lastMatch

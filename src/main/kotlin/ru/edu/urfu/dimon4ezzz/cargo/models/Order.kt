@@ -10,7 +10,7 @@ data class Order(
     /**
      * Название заказа.
      */
-    val name: String,
+    var name: String,
 
     /**
      * Пункт доставки.
