@@ -49,7 +49,7 @@ class Router(
      *
      * Сделан отдельный лист, потому что по нему легче искать.
      */
-    private var orders = ArrayList<Order>()
+    private var orders = CopyOnWriteArrayList<Order>()
 
     fun addOrder(order: Order): Boolean {
         if (orders.count() > 5) return false
@@ -136,8 +136,22 @@ class Router(
     /**
      * Удаляет заказы, которые нужны были в этом пункте.
      */
-    fun finishOrder() = orders.removeIf {
-        it.destination == truck.location
+    fun finishOrder() {
+        orders.removeIf {
+            it.destination == truck.location
+        }
+
+        // заказы, которые он сюда привёз кидает на аукцион
+        orders.forEach {
+            if (it.path.startVertex == truck.location) {
+                truck.location
+                    .orderSource
+                    .auction
+                    .addOrder(it)
+
+                orders.remove(it)
+            }
+        }
     }
 
     /**
