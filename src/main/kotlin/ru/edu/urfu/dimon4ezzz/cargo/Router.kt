@@ -70,6 +70,7 @@ class Router(
         else if (path.weight < MAX_PATH_LENGTH) {
             // если такой путь нашёлся
             getMatchPath(order.path)?.let {
+                println("${truck.name} нашёл трансферный путь ${it.getStringForLog()}")
                 // задать свой путь им
                 path = it
                 // остаток пути записать в заказ
@@ -89,6 +90,7 @@ class Router(
             // если существует точка передачи
             //  т.е. путь заказа и грузовика совпадает
             getTransferPoint(order.path)?.let {
+                println("${truck.name} нашёл трансферную точку ${it.name}")
                 // добавляем его в очередь
                 // TODO если в текущем пути < 3, добавить как дальнюю точку
                 addToQueues(order)
