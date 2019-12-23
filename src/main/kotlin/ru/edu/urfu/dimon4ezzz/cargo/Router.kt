@@ -9,8 +9,9 @@ import ru.edu.urfu.dimon4ezzz.cargo.models.Point
 import ru.edu.urfu.dimon4ezzz.cargo.models.Truck
 import java.util.*
 import java.util.concurrent.CopyOnWriteArrayList
-import kotlin.ConcurrentModificationException
 import kotlin.collections.ArrayList
+
+private const val MAX_PATH_LENGTH = 3
 
 /**
  * Маршрутчик грузовика. Управляет всеми точками, которые посетит этот грузовик.
@@ -51,7 +52,7 @@ class Router(
     private var orders = ArrayList<Order>()
 
     fun addOrder(order: Order): Boolean {
-        if (orders.count() > 5 || order.path.weight > 3) return false
+        if (orders.count() > 5) return false
 
         // если путь грузовика ещё не задан
         // то есть в пути только одна вершина
@@ -64,40 +65,42 @@ class Router(
             addToQueues(order)
             return true
         }
-        // не стал делать else if, т. к. читаемость кода ухудшается,
-        // потому что не понятно сходу, если оставить shortestPath… в качестве выражения
-        else {
-            // путь из конечной точки
-            val shortestPathFromTheEnd = InformationHolder.getPath(path.endVertex, order.destination)
-
-            // если доехать из конечной точки ближе,
-            // чем из текущей, то…
-            println("${truck.name} сравнивает ${shortestPathFromTheEnd.getStringForLog()} и ${order.path.getStringForLog()}")
-            if (shortestPathFromTheEnd.weight <= order.path.weight) {
-                // теперь путь для заказа —
-                // это часть пути от точки передачи
-                // до точки назначения
-//                order.path = GraphWalkBuilder.subtract(order.path, path)
-//                pointsQueue.add(order.path.startVertex)
-
-                // == сложение путей ==
-                //// добавляет к текущему пути частичку до точки назначения
-                 path = concat(path, shortestPathFromTheEnd)
-                 pointsQueue.add(order.destination)
-
-                // добавляем заказ в число заказов
-                orders.add(order)
+        // если путь грузовика меньше трёх вершин
+        // 2 + текущая (1) = 3
+        else if (path.weight < MAX_PATH_LENGTH) {
+            // если такой путь нашёлся
+            getMatchPath(order.path)?.let {
+                // задать свой путь им
+                path = it
+                // остаток пути записать в заказ
+                order.path = deletePoint(order.path, it.endVertex)
                 return true
+            }?:let {
+                println("${truck.name} против добавления ${order.name}")
+                return false
             }
         }
-
-        // по-другому не поедет, так как
-        // если из этой точки выехать дешевле,
-        // а из конечной дороже, значит
-        // точка доставки не на текущем пути (см. пред. if)
-        // или доступна по совершенно другому пути
-        println("${truck.name} против добавления ${order.name}")
-        return false
+        // если путь заказа меньше, чем 3, и он не прошёл проверки выше,
+        //  значит, он находится по другую сторону пути
+        else if (order.path.weight < MAX_PATH_LENGTH) {
+            return false
+        }
+        else {
+            // если существует точка передачи
+            //  т.е. путь заказа и грузовика совпадает
+            getTransferPoint(order.path)?.let {
+                // добавляем его в очередь
+                // TODO если в текущем пути < 3, добавить как дальнюю точку
+                addToQueues(order)
+                // задать в самом заказе путь как остаток пути
+                // от передаточной точки до точки назначения
+                order.path = deletePoint(order.path, it)
+                return true
+            }?:let {
+                println("${truck.name} против добавления ${order.name}")
+                return false
+            }
+        }
     }
 
     fun isEmpty(): Boolean =
@@ -137,11 +140,43 @@ class Router(
         it.destination == truck.location
     }
 
+    /**
+     * Инициирует путь в соответствии с требованиями к длине пути.
+     *
+     * Если путь длинее трёх пунктов, обрезает путь заказа и записывает остаток в сам заказ.
+     */
     private fun initPath(order: Order) {
-        pointsQueue.add(order.destination)
-        path = order.path as GraphWalk<Point, DefaultEdge>
-        println("${truck.name} инициирует путь ${path.getStringForLog()}")
+        // определяем, далеко ли пункт назначения заказа
+        val isOrderFar = order.path.weight > MAX_PATH_LENGTH
+
+        // если пункт назначения слишком далеко,
+        //  берём только четвёртую вершину
+        val endVertex = if (isOrderFar) {
+            order.path.vertexList[MAX_PATH_LENGTH]
+        } else {
+            order.path.endVertex
+        }
+
+        // если пункт назначения слишком далеко,
+        //  берём только путь до точки передачи
+        path = if (isOrderFar) {
+            // {1} привязка к остовному дереву
+            InformationHolder.getPath(truck.location, endVertex)
+        } else {
+            order.path
+        }
+
+        // если пункт назначения слишком далеко,
+        //  обрезаем путь заказа до точки передачи,
+        //  чтобы следующий грузовик поехал уже
+        //  по пути от точки передачи
+        if (isOrderFar)
+            order.path = deletePoint(order.path, endVertex)
+
+        pointsQueue.add(endVertex)
         orders.add(order)
+
+        println("${truck.name} инициирует путь ${path.getStringForLog()}")
     }
 
     private fun addToQueues(order: Order) {
@@ -195,5 +230,47 @@ class Router(
             vertexList as List<Point>,
             weight
         )
+    }
+
+    /**
+     * Ищет путь, который бы включал в себя текущий путь.
+     */
+    private fun getMatchPath(orderPath: GraphPath<Point, DefaultEdge>): GraphPath<Point, DefaultEdge>? {
+        val currentLength = path.edgeList.count()
+        var endVertex = path.startVertex
+
+        // проходим по первым рёбрам
+        for (i in 0 until currentLength) {
+            endVertex = if (path.edgeList[i] == orderPath.edgeList[i]) {
+                if (i == currentLength - 1) {
+                    orderPath.vertexList[MAX_PATH_LENGTH + 1]
+                } else {
+                    orderPath.vertexList[i + 1]
+                }
+            } // если совпадений ни разу не было
+            else if (i == 0) {
+                return null
+            } else {
+                break
+            }
+        }
+
+        return InformationHolder.getPath(path.startVertex, endVertex)
+    }
+
+    /**
+     * Ищет точку передачи заказа в других пунктах.
+     */
+    private fun getTransferPoint(orderPath: GraphPath<Point, DefaultEdge>): Point? {
+        // изначально считаем, что передаточных точек нет
+        var lastMatch: Point? = null
+
+        // грузовик не поедет дальше третьего пункта
+        for (i in 1 until MAX_PATH_LENGTH) {
+            if (path.vertexList[i] == orderPath.vertexList[i])
+                lastMatch = path.vertexList[i + 1]
+        }
+
+        return lastMatch
     }
 }
