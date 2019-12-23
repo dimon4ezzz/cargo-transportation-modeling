@@ -99,7 +99,7 @@ class Router(
                 order.path = deletePoint(order.path, it)
                 return true
             }?:let {
-                println("${truck.name} против добавления ${order.name}")
+//                println("${truck.name} против добавления ${order.name}")
                 return false
             }
         }
@@ -126,10 +126,10 @@ class Router(
      * и удаляет её из списка и из общего пути.
      */
     fun getNextPointAndRecalculate(): Point {
-        println("${truck.name} посетит $pointsQueue")
+//        println("${truck.name} посетит $pointsQueue")
         val point = pointsQueue.poll()
-        println("осторожно, двери закрываются!")
-        println("следующая остановка ${point.name} (${truck.name})")
+//        println("осторожно, двери закрываются!")
+//        println("следующая остановка ${point.name} (${truck.name})")
         // удалить из path всё до этой точки
         path = deletePoint(path, point) as GraphWalk<Point, DefaultEdge>
         return point
@@ -218,7 +218,7 @@ class Router(
     ): GraphWalk<Point, DefaultEdge> {
         val walk1 = path1 as GraphWalk<Point, DefaultEdge> // cast
         val walk2 = path2 as GraphWalk<Point, DefaultEdge> // cast
-        println("соединяю ${walk1.getStringForLog()} и ${walk2.getStringForLog()}")
+//        println("соединяю ${walk1.getStringForLog()} и ${walk2.getStringForLog()}")
         return walk1.concat(walk2) { walk1.weight + walk2.weight }
     }
 

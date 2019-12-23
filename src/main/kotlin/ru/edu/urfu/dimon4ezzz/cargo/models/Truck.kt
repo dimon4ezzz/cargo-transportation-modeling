@@ -75,14 +75,14 @@ data class Truck(
     private val defaultTruckActionListener = object :
         TruckActionListener {
         override fun onComplete() {
-            println("погрузка на $name завершилась")
+//            println("погрузка на $name завершилась")
             // удалить первую задачу из очереди,
             // так как она закончилась
             tasks.remove()
             // если больше задач нет
             // или грузовик полон заказами
             if (tasks.isEmpty() || router.isFull()) {
-                println("$name больше не хочет получать заказов")
+//                println("$name больше не хочет получать заказов")
                 // удалить свой листенер
                 // если листенер не найдётся,
                 // ничего страшного, пропустит
@@ -135,7 +135,7 @@ data class Truck(
      */
     private fun move() {
         // двигается к первому по пути месту назначения
-        println("$name едет ${router.getPathAsString()}")
+//        println("$name едет ${router.getPathAsString()}")
         state = TruckState.MOVING
         // берёт следующую точку
         val point = router.getNextPointAndRecalculate()
