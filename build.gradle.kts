@@ -19,24 +19,18 @@ dependencies {
     implementation("org.jgrapht:jgrapht-core:1.3.1")
 }
 
-// thanks to https://stackoverflow.com/a/43998029/3686575
-val fatJar = task("fatJar", type = Jar::class) {
-    manifest {
-        attributes["Main-Class"] = "MainKt"
-    }
-    from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
-    with(tasks.jar.get() as CopySpec)
-}
-
 tasks {
-    "build" {
-        dependsOn(fatJar)
-    }
-
     compileKotlin {
         kotlinOptions.jvmTarget = "1.8"
     }
     compileTestKotlin {
         kotlinOptions.jvmTarget = "1.8"
+    }
+
+    jar {
+        manifest {
+            attributes["Main-Class"] = "ru.edu.urfu.d4zzz.MainKt"
+        }
+        from(configurations.compileClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
     }
 }
