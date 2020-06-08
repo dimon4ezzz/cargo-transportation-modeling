@@ -58,7 +58,7 @@ fun main() {
  * Пока что все названия — номер по порядку.
  */
 private fun generatePoints(amount: Int = POINTS_AMOUNT) = IntStream.range(0, amount)
-    .mapToObj<Point> {
+    .mapToObj {
         Point(
             name = "p$it"
         )
@@ -111,7 +111,7 @@ private fun graphInit(): SimpleGraph<Point, DefaultEdge> {
  * Пока что все названия — номер по порядку.
  */
 private fun generateTrucks(amount: Int = TRUCKS_AMOUNT) = IntStream.range(0, amount)
-    .mapToObj<Truck> {
+    .mapToObj {
         Truck(
             name = "t$it",
             location = InformationHolder.getRandomPoint(),

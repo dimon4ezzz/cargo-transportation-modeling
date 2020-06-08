@@ -33,7 +33,7 @@ class Router(
     /**
      * Очередь из точек, которые грузовик собирается посетить.
      */
-    private var pointsQueue = PriorityQueue<Point>(pointComparator)
+    private var pointsQueue = PriorityQueue(pointComparator)
 
     /**
      * Текущий путь, по которому поедет грузовик.
@@ -247,7 +247,7 @@ class Router(
         // TODO вес рёбер нужно учитывать
         val weight = vertexList.count().toDouble()
 
-        return GraphWalk<Point, DefaultEdge>(
+        return GraphWalk(
             InformationHolder.graph,
             vertexList as List<Point>,
             weight
