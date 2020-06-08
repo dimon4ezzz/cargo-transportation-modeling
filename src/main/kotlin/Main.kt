@@ -60,7 +60,7 @@ fun main() {
 private fun generatePoints(amount: Int = POINTS_AMOUNT) = IntStream.range(0, amount)
     .mapToObj<Point> {
         Point(
-            name = it.toString()
+            name = "p$it"
         )
     }.toList()
 
@@ -113,7 +113,7 @@ private fun graphInit(): SimpleGraph<Point, DefaultEdge> {
 private fun generateTrucks(amount: Int = TRUCKS_AMOUNT) = IntStream.range(0, amount)
     .mapToObj<Truck> {
         Truck(
-            name = it.toString(),
+            name = "t$it",
             location = InformationHolder.getRandomPoint(),
             state = TruckState.SLEEPING
         )
