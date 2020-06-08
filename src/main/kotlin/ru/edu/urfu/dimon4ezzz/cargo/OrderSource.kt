@@ -57,7 +57,7 @@ class OrderSource(
      * Генерирует случайный пункт, за исключением текущего.
      * TODO перенести в InformationHolder
      *
-     * @throws IllegalStateException когда не задан список пунктов
+     * @throws NoSuchElementException когда не задан список пунктов
      */
     private fun getRandomPoint(): Point {
         var point = InformationHolder.getRandomPoint()

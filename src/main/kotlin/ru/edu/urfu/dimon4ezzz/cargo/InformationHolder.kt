@@ -5,6 +5,7 @@ import org.jgrapht.alg.shortestpath.DijkstraShortestPath
 import org.jgrapht.graph.DefaultEdge
 import org.jgrapht.graph.SimpleGraph
 import ru.edu.urfu.dimon4ezzz.cargo.models.Point
+import java.util.concurrent.CopyOnWriteArrayList
 
 /**
  * Хранитель данных.
@@ -12,19 +13,16 @@ import ru.edu.urfu.dimon4ezzz.cargo.models.Point
  * Является Singleton объектом.
  */
 object InformationHolder {
-    var points: List<Point>? = null
+    var points: List<Point> = CopyOnWriteArrayList()
     var graph = SimpleGraph<Point, DefaultEdge>(DefaultEdge::class.java)
 
     /**
      * Передаёт случайную точку в модели.
      *
-     * @throws IllegalStateException когда список пунктов не задан.
+     * @throws NoSuchElementException когда список пунктов не задан.
      */
-    fun getRandomPoint(): Point {
-        points
-            ?.let { return it.random() }
-            ?: throw IllegalStateException("list of points did not set")
-    }
+    fun getRandomPoint(): Point =
+        points.let { return it.random() }
 
     fun getPath(location: Point, destination: Point): GraphPath<Point, DefaultEdge> =
         DijkstraShortestPath.findPathBetween(graph, location, destination)
