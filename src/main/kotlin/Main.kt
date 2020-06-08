@@ -67,7 +67,7 @@ private fun generatePoints(amount: Int = POINTS_AMOUNT) = IntStream.range(0, amo
 private fun graphInit(): SimpleGraph<Point, DefaultEdge> {
     val graph = SimpleGraph<Point, DefaultEdge>(DefaultEdge::class.java)
 
-    InformationHolder.points?.let {points ->
+    InformationHolder.points.let { points ->
         // добавляет все пункты
         points.forEach {point ->
             graph.addVertex(point)
