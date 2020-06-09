@@ -16,7 +16,7 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
-    implementation("org.jgrapht:jgrapht-core:1.3.1")
+    implementation("org.jgrapht:jgrapht-core:1.4.0")
 }
 
 tasks {
