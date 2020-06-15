@@ -13,6 +13,7 @@ import java.util.*
 import java.util.concurrent.CopyOnWriteArrayList
 
 private const val MAX_PATH_LENGTH = 3
+private const val MAX_AMOUNT = 12
 
 /**
  * Маршрутчик грузовика. Управляет всеми точками, которые посетит этот грузовик.
@@ -53,7 +54,7 @@ class Router(
     private var orders = CopyOnWriteArrayList<Order>()
 
     fun addOrder(order: Order): Boolean {
-        if (orders.count() > 5) return false
+        if (orders.count() >= MAX_AMOUNT) return false
 
         // если путь грузовика ещё не задан
         // то есть в пути только одна вершина
@@ -122,7 +123,7 @@ class Router(
      *  которые везёт грузовик
      */
     fun isFull(): Boolean =
-        orders.count() == 6
+        orders.count() == MAX_AMOUNT
 
     /**
      * Форматирует путь как строку вида 1-2-3.
