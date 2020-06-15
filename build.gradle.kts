@@ -29,7 +29,7 @@ tasks {
 
     jar {
         manifest {
-            attributes["Main-Class"] = "ru.edu.urfu.d4zzz.MainKt"
+            attributes["Main-Class"] = "MainKt"
         }
         from(configurations.compileClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
     }
