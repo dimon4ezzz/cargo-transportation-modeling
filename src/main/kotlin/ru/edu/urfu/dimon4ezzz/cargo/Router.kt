@@ -96,6 +96,8 @@ class Router(
             // если существует точка передачи
             //  т.е. путь заказа и грузовика совпадает
             getTransferPoint(order.path)?.let {
+                if (it == truck.location)
+                    return false
                 // задать в самом заказе путь как остаток пути
                 // от передаточной точки до точки назначения
                 order.path = cutThePath(order.path)
