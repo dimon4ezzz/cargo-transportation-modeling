@@ -141,9 +141,13 @@ class Router(
      * Удаляет заказы, которые нужны были в этом пункте.
      */
     fun finishOrder() {
-        orders.removeIf {
-            it.destination == truck.location
+        orders.forEach {
+            if (it.destination == truck.location) {
+                orders.remove(it)
+            }
         }
+
+        rebuild()
 
         // заказы, которые он сюда привёз кидает на аукцион
         orders.forEach {
@@ -156,6 +160,16 @@ class Router(
                 orders.remove(it)
             }
         }
+    }
+
+    /**
+     * Перестраивает текущий путь к первой в очереди точке доставки.
+     */
+    private fun rebuild() {
+        path = if (pointsQueue.isEmpty()) GraphWalk.singletonWalk(InformationHolder.graph, truck.location)
+        else InformationHolder.getPath(truck.location, pointsQueue.last())
+
+        pointComparator = PointComparator(truck.location)
     }
 
     /**
