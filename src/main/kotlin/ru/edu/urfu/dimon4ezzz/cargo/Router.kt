@@ -135,8 +135,8 @@ class Router(
      * Передаёт следующую точку
      * и удаляет её из списка и из общего пути.
      */
-    fun getNextPointAndRecalculate(): Point {
-        val point = pointsQueue.poll()
+    fun getNextPointAndRecalculate(): Point? {
+        val point = pointsQueue.poll() ?: return null
         // удалить из path всё до этой точки
         path = deletePoint(path, point) as GraphWalk<Point, DefaultEdge>
         return point

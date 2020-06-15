@@ -5,7 +5,6 @@ import ru.edu.urfu.dimon4ezzz.cargo.Router
 import ru.edu.urfu.dimon4ezzz.cargo.listeners.OrderQueueListener
 import ru.edu.urfu.dimon4ezzz.cargo.listeners.TruckActionListener
 import ru.edu.urfu.dimon4ezzz.cargo.tasks.TruckAction
-import ru.edu.urfu.dimon4ezzz.cargo.tasks.TruckGivingTask
 import ru.edu.urfu.dimon4ezzz.cargo.tasks.TruckTakingTask
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.math.roundToLong
@@ -16,6 +15,11 @@ import kotlin.math.roundToLong
  * 5 минут → 1 секунда, значит 1 час → 12 секунд.
  */
 private const val MOVING_TIME: Long = (60 / 5) * 1000 // 12s
+
+/**
+ * Время разгрузки; разгрузка параллельна.
+ */
+private const val GIVING_TIME: Long = (30 / 5) * 1000 // 6s
 
 /**
  * Грузовик.
@@ -136,6 +140,10 @@ data class Truck(
         state = TruckState.MOVING
         // берёт следующую точку
         val point = router.getNextPointAndRecalculate()
+        if (point == null) {
+            state = TruckState.SLEEPING
+            return
+        }
         // узнаёт, сколько до неё ехать
         val pathWeight = InformationHolder.getPath(location, point).weight
         // умножает на время одного часа
@@ -144,31 +152,21 @@ data class Truck(
         Thread.sleep(pathTime)
         // записывает себя в эту точку
         location = point
-        // задаёт свой листенер в эту точку
-        setListenerToLocationSource()
-        // удяляет из своего роутера заказы, которые привёз
-        router.finishOrder()
-
         println("$name приехал в ${location.name}")
         // выгружает
         state = TruckState.GIVING
-        // ждём, пока разгрузится
-        tasks.add(TruckGivingTask(object : TruckActionListener {
-            override fun onComplete() {
-                tasks.remove()
+        Thread.sleep(GIVING_TIME)
 
-                // если заказов нет,
-                if (router.isEmpty()) {
-                    // состояние «спит»
-                    state = TruckState.SLEEPING
-                }
-                // если заказы есть, едем дальше
-                else {
-                    state = TruckState.MOVING
-                    move()
-                }
-            }
-        }))
-        Thread(tasks.last()).start()
+        // удяляет из своего роутера заказы, которые привёз
+        router.finishOrder()
+
+        // если заказы есть, едем дальше
+        if (router.isFull() && state != TruckState.MOVING) {
+            move()
+        } else {
+            state = TruckState.SLEEPING
+            // задаёт свой листенер в эту точку
+            setListenerToLocationSource()
+        }
     }
 }
