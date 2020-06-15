@@ -1,7 +1,6 @@
 package ru.edu.urfu.dimon4ezzz.cargo
 
 import org.jgrapht.GraphPath
-import org.jgrapht.Graphs
 import org.jgrapht.graph.DefaultEdge
 import org.jgrapht.graph.GraphWalk
 import ru.edu.urfu.dimon4ezzz.cargo.comparators.PointComparator
@@ -67,30 +66,6 @@ class Router(
             // добавляем в очередь точку назначения
             addToQueue(order)
             return true
-        }
-        // если путь грузовика меньше трёх вершин
-        // 2 + текущая (1) = 3
-        else if (path.weight < MAX_PATH_LENGTH) {
-            // если такой путь нашёлся
-            try {
-                getMatchPath(order.path)?.let {
-                    // задать свой путь им
-                    path = it
-                    // остаток пути записать в заказ
-                    order.path = deletePoint(order.path, it.endVertex)
-                    order.name += "-t${it.endVertex.name}"
-                    return true
-                } ?: let {
-                    return false
-                }
-            } catch (e: IndexOutOfBoundsException) {
-                error("${truck.name} не справился с вычислением заказа ${order.name}\nошибка: ${e.message}")
-            }
-        }
-        // если путь заказа меньше, чем 3, и он не прошёл проверки выше,
-        //  значит, он находится по другую сторону пути
-        else if (order.path.weight < MAX_PATH_LENGTH) {
-            return false
         }
         else {
             // если существует точка передачи
@@ -262,22 +237,14 @@ class Router(
             return GraphWalk.singletonWalk(InformationHolder.graph, point)
 
         val vertexList: CopyOnWriteArrayList<Point> = CopyOnWriteArrayList(path.vertexList)
-        for (v in vertexList) {
-            if (v == point) {
-                break
-            }
-
-            vertexList.remove(v)
-        }
+        vertexList.removeIf { v -> v == point }
 
         // если останется всего лишь одно ребро,
         //  в этом списке будет лишь одна вершина,
         //  а значит, нужно отдавать путь из одного ребра
-        if (vertexList.count() == 1) {
-            val replaced = vertexList[0]
-            vertexList[0] = Graphs.getOppositeVertex(InformationHolder.graph, path.edgeList.last(), replaced)
-            vertexList.add(replaced)
-        }
+
+        if (vertexList.count() == 1)
+            return GraphWalk.singletonWalk(InformationHolder.graph, vertexList[0])
 
         // TODO вес рёбер нужно учитывать
         val weight = vertexList.count().toDouble()
