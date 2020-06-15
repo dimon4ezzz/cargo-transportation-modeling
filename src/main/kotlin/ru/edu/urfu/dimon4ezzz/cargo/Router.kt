@@ -23,10 +23,6 @@ class Router(
     /**
      * Стандартный компаратор пунктов:
      * кто ближе к местоположению грузовика, тот и ближе к началу очереди.
-     *
-     * FIXME не умеет учитывать порядок в пути,
-     *  если следующая точка ближе
-     *  скорее всего нужно остовное дерево
      */
     private var pointComparator = PointComparator(truck.location)
 
@@ -40,8 +36,6 @@ class Router(
      *
      * Изначально — пустой путь на заданном графе,
      * у которого задана лишь одна точка.
-     *
-     * FIXME перестроить путь по приезде в новый пункт
      */
     private var path: GraphPath<Point, DefaultEdge> = GraphWalk.singletonWalk(InformationHolder.graph, truck.location)
 
