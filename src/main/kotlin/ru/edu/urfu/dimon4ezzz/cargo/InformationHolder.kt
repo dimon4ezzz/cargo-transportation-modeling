@@ -22,7 +22,7 @@ object InformationHolder {
      * @throws NoSuchElementException когда список пунктов не задан.
      */
     fun getRandomPoint(): Point =
-        points.let { return it.random() }
+        points.random()
 
     fun getPath(location: Point, destination: Point): GraphPath<Point, DefaultEdge> =
         DijkstraShortestPath.findPathBetween(graph, location, destination)
