@@ -80,6 +80,8 @@ class Auction {
             // если кто-то взялся
             if (value.onPush(order))
                 return true
+
+            Thread.sleep(100)
         }
 
         return false
@@ -91,6 +93,7 @@ class Auction {
      * то передаёт `true`, иначе его можно добавить с список слушателей.
      */
     private fun checkOrdersAndAskItLast(listener: OrderQueueListener) = orders.removeIf {
+        Thread.sleep(100)
         listener.onPush(it)
     }
 }

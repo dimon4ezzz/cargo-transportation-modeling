@@ -123,6 +123,7 @@ class Router(
         // заказы, которые он сюда привёз кидает на аукцион
         orders.forEach {
             if (it.path.startVertex == truck.location) {
+                Thread.sleep(50)
                 truck.location
                     .orderSource
                     .auction

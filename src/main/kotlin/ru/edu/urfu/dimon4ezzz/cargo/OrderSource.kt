@@ -32,6 +32,7 @@ class OrderSource(
      */
     override fun run() {
         auction.addOrder(generateOrder())
+        Thread.sleep(50)
 
         // если рандом решит, что нужно два,
         // посылает ещё один заказ в очередь
