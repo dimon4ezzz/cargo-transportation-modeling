@@ -81,21 +81,12 @@ class Router(
         }
     }
 
-    fun isEmpty(): Boolean =
-        orders.isEmpty()
-
     /**
      * @return полна ли очередь заказов,
      *  которые везёт грузовик
      */
     fun isFull(): Boolean =
         orders.count() == MAX_AMOUNT
-
-    /**
-     * Форматирует путь как строку вида 1-2-3.
-     */
-    fun getPathAsString(): String =
-        path.getStringForLog()
 
     /**
      * Передаёт следующую точку
@@ -169,6 +160,7 @@ class Router(
         }
         orders.add(order)
     }
+
     /**
      * Инициирует путь в соответствии с требованиями к длине пути.
      *
@@ -203,23 +195,6 @@ class Router(
             order.path = cutThePath(order.path)
 
         addToQueue(order, endVertex)
-    }
-
-    /**
-     * Соединяет два пути воедино, создавая из них GraphWalk.
-     *
-     * @see Router.addOrder в нём есть вариант,
-     *  когда грузовик наберёт себе заказов на всю карту
-     *  и будет возить, всё время продлевая свой путь,
-     *  всё время проезжая по одним и тем же дорогам
-     */
-    private fun concat(
-        path1: GraphPath<Point, DefaultEdge>,
-        path2: GraphPath<Point, DefaultEdge>
-    ): GraphWalk<Point, DefaultEdge> {
-        val walk1 = path1 as GraphWalk<Point, DefaultEdge> // cast
-        val walk2 = path2 as GraphWalk<Point, DefaultEdge> // cast
-        return walk1.concat(walk2) { walk1.weight + walk2.weight }
     }
 
     private fun deletePoint(
@@ -273,32 +248,6 @@ class Router(
             vertexList as List<Point>,
             weight
         )
-    }
-
-    /**
-     * Ищет путь, который бы включал в себя текущий путь.
-     */
-    private fun getMatchPath(orderPath: GraphPath<Point, DefaultEdge>): GraphPath<Point, DefaultEdge>? {
-        val currentLength = path.edgeList.count()
-        var endVertex = path.startVertex
-
-        // проходим по первым рёбрам
-        for (i in 0 until currentLength) {
-            endVertex = if (path.edgeList[i] == orderPath.edgeList[i]) {
-                if (i == currentLength - 1) {
-                    orderPath.vertexList[min(orderPath.length, MAX_PATH_LENGTH + 1)]
-                } else {
-                    orderPath.vertexList[i + 1]
-                }
-            } // если совпадений ни разу не было
-            else if (i == 0) {
-                return null
-            } else {
-                break
-            }
-        }
-
-        return InformationHolder.getPath(path.startVertex, endVertex)
     }
 
     /**
