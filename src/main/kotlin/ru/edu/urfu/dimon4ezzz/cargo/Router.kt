@@ -65,9 +65,7 @@ class Router(
         // если путь грузовика включает в себя точку назначения
         else if (path.vertexList.contains(order.destination)) {
             // добавляем в очередь точку назначения
-            pointsQueue.add(order.destination)
-            // добавляем заказ в число заказов
-            orders.add(order)
+            addToQueue(order)
             return true
         }
         // если путь грузовика меньше трёх вершин
@@ -104,10 +102,7 @@ class Router(
                 order.name += "-t${it.name}"
                 // добавляем его в очередь
                 // TODO если в текущем пути < 3, добавить как дальнюю точку
-                // добавляем в очередь точку назначения
-                pointsQueue.add(it)
-                // добавляем заказ в число заказов
-                orders.add(order)
+                addToQueue(order, it)
                 return true
             }?:let {
                 return false
@@ -164,6 +159,31 @@ class Router(
     }
 
     /**
+     * Добавляет в очередь новый заказ.
+     *
+     * Автоматически проверяет, не дублируется ли
+     *  точка доставки этого заказа.
+     *
+     * @param order заказ
+     */
+    private fun addToQueue(order: Order) {
+        addToQueue(order, order.destination)
+    }
+
+    /**
+     * Добавляет в очередь новый заказ
+     *  и проверяет, не дублируется ли точка доставки.
+     *
+     * @param order заказ
+     * @param point дочка доставки
+     */
+    private fun addToQueue(order: Order, point: Point) {
+        if (!pointsQueue.contains(point)) {
+            pointsQueue.add(point)
+        }
+        orders.add(order)
+    }
+    /**
      * Инициирует путь в соответствии с требованиями к длине пути.
      *
      * Если путь длиннее трёх пунктов, обрезает путь заказа и записывает остаток в сам заказ.
@@ -196,9 +216,7 @@ class Router(
         if (isOrderFar)
             order.path = deletePoint(order.path, endVertex)
 
-        pointsQueue.add(endVertex)
-        orders.add(order)
-
+        addToQueue(order, endVertex)
     }
 
     /**
