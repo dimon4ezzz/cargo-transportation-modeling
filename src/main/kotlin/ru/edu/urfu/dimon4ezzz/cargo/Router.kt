@@ -303,13 +303,24 @@ class Router(
      * Ищет точку передачи заказа в других пунктах.
      */
     private fun getTransferPoint(orderPath: GraphPath<Point, DefaultEdge>): Point? {
-        // изначально считаем, что передаточных точек нет
+        var iter1 = path.vertexList.iterator()
+        iter1.next()
+        var iter2 = orderPath.vertexList.iterator()
+        iter2.next()
+        var i = 1
+
+        var p1: Point
+        var p2: Point
         var lastMatch: Point? = null
 
-        // грузовик не поедет дальше третьего пункта
-        for (i in 1 until MAX_PATH_LENGTH) {
-            if (path.vertexList[i] == orderPath.vertexList[i])
-                lastMatch = path.vertexList[i]
+        while (iter1.hasNext() && iter2.hasNext() && i++ <= MAX_PATH_LENGTH) {
+            p1 = iter1.next()
+            p2 = iter2.next()
+            if (p1 == p2) {
+                lastMatch = p1
+            } else {
+                break
+            }
         }
 
         return lastMatch
