@@ -98,7 +98,7 @@ class Router(
             getTransferPoint(order.path)?.let {
                 // задать в самом заказе путь как остаток пути
                 // от передаточной точки до точки назначения
-                order.path = deletePoint(order.path, it)
+                order.path = cutThePath(order.path)
                 order.name += "-t${it.name}"
                 // добавляем его в очередь
                 // TODO если в текущем пути < 3, добавить как дальнюю точку
@@ -228,7 +228,7 @@ class Router(
         //  чтобы следующий грузовик поехал уже
         //  по пути от точки передачи
         if (isOrderFar)
-            order.path = deletePoint(order.path, endVertex)
+            order.path = cutThePath(order.path)
 
         addToQueue(order, endVertex)
     }
@@ -280,6 +280,30 @@ class Router(
         // TODO вес рёбер нужно учитывать
         val weight = vertexList.count().toDouble()
 
+        return GraphWalk(
+            InformationHolder.graph,
+            vertexList as List<Point>,
+            weight
+        )
+    }
+
+    /**
+     * Обрезает путь до ближайшей точки передачи этого грузовика.
+     *
+     * Например, путь для заказа требует движения направо,
+     *  а грузовик движется налево. Таким образом,
+     *  точка передачи — перекрёсток, и путь для заказа
+     *  теперь начинается от точки передачи.
+     */
+    private fun cutThePath(path: GraphPath<Point, DefaultEdge>): GraphWalk<Point, DefaultEdge> {
+        val vertexList = CopyOnWriteArrayList(path.vertexList)
+        val length = min(vertexList.count(), MAX_PATH_LENGTH + 1)
+        val endVertex: Point = vertexList[length - 1]
+        for (i in vertexList) {
+            if (i == endVertex) break
+            vertexList.remove(i)
+        }
+        val weight = vertexList.count().toDouble()
         return GraphWalk(
             InformationHolder.graph,
             vertexList as List<Point>,
