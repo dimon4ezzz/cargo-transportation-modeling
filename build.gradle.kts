@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "1.3.72"
+    kotlin("jvm") version "1.4.10"
     application
 }
 
@@ -16,7 +16,7 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
-    implementation("org.jgrapht:jgrapht-core:1.4.0")
+    implementation("org.jgrapht:jgrapht-core:1.5.0")
 }
 
 tasks {
